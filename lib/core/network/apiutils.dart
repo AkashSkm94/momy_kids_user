@@ -1,0 +1,400 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../constants/color_palette.dart';
+import '../storage/local_storage_manager.dart';
+import 'url_manager.dart';
+
+class ApiUtils {
+  static const int _timeoutDuration = 30; // 30 seconds timeout
+
+  /// Check internet connectivity
+  static Future<bool> hasInternetConnection() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        return false;
+      }
+      
+      // Additional check by trying to reach a reliable server
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Generic GET request
+  static Future<ApiResponse> get({
+    required String endpoint,
+    Map<String, String>? headers,
+    Map<String, dynamic>? queryParams,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Build URL with query parameters
+      String url = UrlManager.getFullUrl(endpoint);
+      if (queryParams != null && queryParams.isNotEmpty) {
+        url += '?${Uri(queryParameters: queryParams.map((key, value) => MapEntry(key, value.toString()))).query}';
+      }
+
+      // Prepare headers
+      final requestHeaders = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?headers,
+      };
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+
+      // Make GET request
+      final response = await http.get(
+        Uri.parse(url),
+        headers: requestHeaders,
+      ).timeout(const Duration(seconds: _timeoutDuration));
+
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Generic POST request
+  static Future<ApiResponse> post({
+    required String endpoint,
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Prepare headers
+      final requestHeaders = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?headers,
+      };
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+
+      print(UrlManager.getFullUrl(endpoint));
+      print(body.toString());
+
+      // Make POST request
+      final response = await http.post(
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+        headers: requestHeaders,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(const Duration(seconds: _timeoutDuration));
+
+      print(response.body);
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Generic PUT request
+  static Future<ApiResponse> put({
+    required String endpoint,
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Prepare headers
+      final requestHeaders = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?headers,
+      };
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+
+      // Make PUT request
+      final response = await http.put(
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+        headers: requestHeaders,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(const Duration(seconds: _timeoutDuration));
+
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Generic DELETE request
+  static Future<ApiResponse> delete({
+    required String endpoint,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Prepare headers
+      final requestHeaders = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?headers,
+      };
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+
+      // Make DELETE request
+      final response = await http.delete(
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+        headers: requestHeaders,
+      ).timeout(const Duration(seconds: _timeoutDuration));
+
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Upload file with multipart request
+  static Future<ApiResponse> uploadFile({
+    required String endpoint,
+    required String filePath,
+    required String fieldName,
+    Map<String, String>? additionalFields,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Create multipart request
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+      );
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        ...?headers,
+      });
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Add file
+      request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+      // Add additional fields
+      if (additionalFields != null) {
+        request.fields.addAll(additionalFields);
+      }
+
+      // Send request
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: _timeoutDuration),
+      );
+
+      // Convert to regular response
+      final response = await http.Response.fromStream(streamedResponse);
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Upload error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
+  /// Handle HTTP response
+  static ApiResponse _handleResponse(http.Response response) {
+    try {
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      
+      return ApiResponse(
+        success: response.statusCode >= 200 && response.statusCode < 300,
+        data: responseData,
+        message: responseData['message'] ?? _getDefaultMessage(response.statusCode),
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Invalid response format',
+        statusCode: response.statusCode,
+      );
+    }
+  }
+
+  /// Get default error message based on status code
+  static String _getDefaultMessage(int statusCode) {
+    switch (statusCode) {
+      case 200:
+        return 'Success';
+      case 201:
+        return 'Created successfully';
+      case 400:
+        return 'Bad request';
+      case 401:
+        return 'Unauthorized';
+      case 403:
+        return 'Forbidden';
+      case 404:
+        return 'Not found';
+      case 422:
+        return 'Validation error';
+      case 500:
+        return 'Internal server error';
+      case 502:
+        return 'Bad gateway';
+      case 503:
+        return 'Service unavailable';
+      default:
+        return 'Unknown error';
+    }
+  }
+
+  /// Get authentication token
+  static Future<String?> _getAuthToken() async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      return storage.getAuthToken();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Set authentication token
+  static Future<void> setAuthToken(String token) async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      await storage.saveAuthToken(token);
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
+  /// Clear authentication token
+  static Future<void> clearAuthToken() async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      await storage.remove(LocalStorageManager.keyAuthToken);
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+}
+
+/// API Response model
+class ApiResponse {
+  final bool success;
+  final dynamic data;
+  final String message;
+  final int statusCode;
+
+  ApiResponse({
+    required this.success,
+    this.data,
+    required this.message,
+    required this.statusCode,
+  });
+
+  /// Check if response is successful
+  bool get isSuccess => success;
+
+  /// Check if response has data
+  bool get hasData => data != null;
+
+  /// Get data as Map
+  Map<String, dynamic>? get dataAsMap {
+    if (data is Map<String, dynamic>) {
+      return data as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  /// Get data as List
+  List<dynamic>? get dataAsList {
+    if (data is List) {
+      return data as List<dynamic>;
+    }
+    return null;
+  }
+
+  @override
+  String toString() {
+    return 'ApiResponse(success: $success, message: $message, statusCode: $statusCode)';
+  }
+}
+
