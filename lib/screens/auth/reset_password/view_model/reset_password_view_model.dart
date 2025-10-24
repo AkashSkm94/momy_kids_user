@@ -3,8 +3,13 @@ import '../../../../core/network/apiutils.dart';
 import '../../../../core/network/url_manager.dart';
 import '../../../../core/localization/appLocalization.dart';
 
-class ForgotPasswordViewModel extends ChangeNotifier {
-  String _email = '';
+class ResetPasswordViewModel extends ChangeNotifier {
+  String _newPassword = '';
+  String _confirmPassword = '';
+  String? _token;
+  String? _email;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   bool _isSuccess = false;
   String _errorMessage = '';
@@ -12,7 +17,12 @@ class ForgotPasswordViewModel extends ChangeNotifier {
   Map<String, String> _errorParams = {};
 
   // Getters
-  String get email => _email;
+  String get newPassword => _newPassword;
+  String get confirmPassword => _confirmPassword;
+  String? get token => _token;
+  String? get email => _email;
+  bool get obscureNewPassword => _obscureNewPassword;
+  bool get obscureConfirmPassword => _obscureConfirmPassword;
   bool get isLoading => _isLoading;
   bool get isSuccess => _isSuccess;
   String get errorMessage => _errorMessage;
@@ -20,8 +30,31 @@ class ForgotPasswordViewModel extends ChangeNotifier {
   Map<String, String> get errorParams => _errorParams;
 
   // Setters
-  void setEmail(String email) {
+  void setNewPassword(String password) {
+    _newPassword = password;
+    notifyListeners();
+  }
+
+  void setConfirmPassword(String password) {
+    _confirmPassword = password;
+    notifyListeners();
+  }
+
+  void setToken(String? token) {
+    _token = token;
+  }
+
+  void setEmail(String? email) {
     _email = email;
+  }
+
+  void toggleNewPasswordVisibility() {
+    _obscureNewPassword = !_obscureNewPassword;
+    notifyListeners();
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    _obscureConfirmPassword = !_obscureConfirmPassword;
     notifyListeners();
   }
 
@@ -74,26 +107,46 @@ class ForgotPasswordViewModel extends ChangeNotifier {
   }
 
   // Validation
-  bool validateEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  bool validatePassword(String password) {
+    return password.length >= 6;
   }
 
-  // Send forgot password email
-  Future<void> sendForgotPasswordEmail(BuildContext context) async {
+  bool validatePasswordsMatch() {
+    return _newPassword == _confirmPassword && _newPassword.isNotEmpty;
+  }
+
+  // Reset password method
+  Future<void> resetPassword(BuildContext context) async {
     final localizations = AppLocalizations.of(context);
     
-    if (_email.isEmpty) {
+    if (_newPassword.isEmpty) {
       setError(
-        localizations.translate('email_required'),
-        errorKey: 'email_required',
+        localizations.translate('new_password_required'),
+        errorKey: 'new_password_required',
       );
       return;
     }
 
-    if (!validateEmail(_email)) {
+    if (!validatePassword(_newPassword)) {
       setError(
-        localizations.translate('valid_email_required'),
-        errorKey: 'valid_email_required',
+        localizations.translate('password_min_length'),
+        errorKey: 'password_min_length',
+      );
+      return;
+    }
+
+    if (_confirmPassword.isEmpty) {
+      setError(
+        localizations.translate('confirm_password_required'),
+        errorKey: 'confirm_password_required',
+      );
+      return;
+    }
+
+    if (!validatePasswordsMatch()) {
+      setError(
+        localizations.translate('passwords_not_match'),
+        errorKey: 'passwords_not_match',
       );
       return;
     }
@@ -103,16 +156,21 @@ class ForgotPasswordViewModel extends ChangeNotifier {
 
     try {
       final response = await ApiUtils.post(
-        endpoint: UrlManager.forgotPassword,
+        endpoint: UrlManager.resetPassword,
         body: {
+          'token': _token,
           'email': _email,
+          'password': _newPassword,
+          'password_confirmation': _confirmPassword,
         },
       );
 
       if (response.isSuccess) {
         setSuccess(true);
       } else {
-        final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('forgot_password_failed');
+        final errorMsg = response.message.isNotEmpty 
+            ? response.message 
+            : localizations.translate('forgot_password_failed');
         setError(
           errorMsg,
           errorKey: response.message.isEmpty ? 'forgot_password_failed' : '',
@@ -130,7 +188,12 @@ class ForgotPasswordViewModel extends ChangeNotifier {
 
   // Reset state
   void reset() {
-    _email = '';
+    _newPassword = '';
+    _confirmPassword = '';
+    _token = null;
+    _email = null;
+    _obscureNewPassword = true;
+    _obscureConfirmPassword = true;
     _isLoading = false;
     _isSuccess = false;
     _errorMessage = '';
@@ -139,3 +202,4 @@ class ForgotPasswordViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
+

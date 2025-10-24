@@ -89,44 +89,49 @@ class BaseTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get text direction for proper RTL support
+    // Get text direction and locale for proper RTL support and keyboard language
     final textDirection = Directionality.of(context);
+    final locale = Localizations.localeOf(context);
     
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius ?? 12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        textInputAction: textInputAction,
-        obscureText: obscureText,
-        enabled: enabled,
-        readOnly: readOnly,
-        maxLines: maxLines,
-        maxLength: maxLength,
-        validator: validator,
-        onChanged: onChanged,
-        onTap: onTap,
-        onFieldSubmitted: onSubmitted,
-        focusNode: focusNode,
-        inputFormatters: inputFormatters,
-        autofocus: autofocus,
-        textCapitalization: textCapitalization,
-        enableSuggestions: enableSuggestions,
-        autocorrect: autocorrect,
-        style: textStyle ?? const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 16,
-          color: ColorPalette.textPrimary,
+    return Localizations.override(
+      context: context,
+      locale: locale,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(borderRadius ?? 12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
+        child: TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          obscureText: obscureText,
+          enabled: enabled,
+          readOnly: readOnly,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          validator: validator,
+          onChanged: onChanged,
+          onTap: onTap,
+          onFieldSubmitted: onSubmitted,
+          focusNode: focusNode,
+          inputFormatters: inputFormatters,
+          autofocus: autofocus,
+          textCapitalization: textCapitalization,
+          enableSuggestions: enableSuggestions,
+          autocorrect: autocorrect,
+          textDirection: textDirection,
+          style: textStyle ?? const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 16,
+            color: ColorPalette.textPrimary,
+          ),
         decoration: InputDecoration(
           label: isRequired && labelText != null 
             ? RichText(
@@ -211,6 +216,7 @@ class BaseTextField extends StatelessWidget {
               width: 2,
             ),
           ) : InputBorder.none,
+        ),
         ),
       ),
     );

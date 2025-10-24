@@ -7,6 +7,8 @@ import '../../screens/email_otp_verified/view/email_otp_verified_view.dart';
 import '../../screens/auth/login/view/login_view.dart';
 import '../../screens/auth/register/view/register_view.dart';
 import '../../screens/auth/forgot_password/view/forgot_password_view.dart';
+import '../../screens/auth/reset_password/view/reset_password_view.dart';
+import '../../screens/profile/view/profile_view.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -34,6 +36,15 @@ class RouteGenerator {
       case AppRoutes.forgotPassword:
         return _createRoute(const ForgotPasswordView(), settings.name!);
 
+      case AppRoutes.resetPassword:
+        final arguments = args as Map<String, dynamic>?;
+        final token = arguments?['token'] as String?;
+        final email = arguments?['email'] as String?;
+        return _createRoute(
+          ResetPasswordView(token: token, email: email),
+          settings.name!,
+        );
+
       case AppRoutes.mobileNumberVerified:
         return _createRoute(const MobileNumberVerifiedView(), settings.name!);
 
@@ -47,9 +58,10 @@ class RouteGenerator {
 
       case AppRoutes.emailOtpVerified:
         final arguments = args as Map<String, dynamic>?;
-        final email = arguments?['email'] as String?;
+        final email = arguments?['email'] ?? "";
+        final from = arguments?['from'] ?? "";
         return _createRoute(
-          EmailOtpVerifiedView(email: email),
+          EmailOtpVerifiedView(email: email,from: from,),
           settings.name!,
         );
 
@@ -65,15 +77,7 @@ class RouteGenerator {
         );
 
       case AppRoutes.profile:
-      // TODO: Implement ProfileScreen
-        return _createRoute(
-          const Scaffold(
-            body: Center(
-              child: Text('Profile Screen - Coming Soon'),
-            ),
-          ),
-          settings.name!,
-        );
+        return _createRoute(const ProfileView(), settings.name!);
 
       case AppRoutes.settings:
       // TODO: Implement SettingsScreen
@@ -184,6 +188,18 @@ class RouteGenerator {
         );
 
       case AppRoutes.forgotPassword:
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          )),
+          child: child,
+        );
+
+      case AppRoutes.resetPassword:
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0.0),

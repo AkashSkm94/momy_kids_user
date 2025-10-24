@@ -14,9 +14,10 @@ import '../view_model/email_otp_verified_view_model.dart';
 import '../../../core/components/email_success_bottom_sheet.dart';
 
 class EmailOtpVerifiedView extends StatefulWidget {
-  final String? email;
-  
-  const EmailOtpVerifiedView({super.key, this.email});
+  final String email;
+  final String from;
+
+  const EmailOtpVerifiedView({super.key, required this.email,required this.from});
 
   @override
   State<EmailOtpVerifiedView> createState() => _EmailOtpVerifiedViewState();
@@ -268,6 +269,8 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
         EmailSuccessBottomSheet.show(
           context,
           email: _viewModel.email,
+          from: widget.from,
+
         );
       } else if (_viewModel.errorMessage.isNotEmpty) {
         // Show error snackbar

@@ -34,6 +34,7 @@ class BaseImage extends StatelessWidget {
   final bool showLoadingIndicator;
   final Color? loadingColor;
   final double? loadingSize;
+  final Color? iconColors;
 
   const BaseImage({
     super.key,
@@ -56,6 +57,7 @@ class BaseImage extends StatelessWidget {
     this.showLoadingIndicator = true,
     this.loadingColor,
     this.loadingSize,
+    this.iconColors,
   });
 
   @override
@@ -120,6 +122,7 @@ class BaseImage extends StatelessWidget {
       width: width,
       height: height,
       alignment: alignment ?? Alignment.center,
+      color: iconColors,
       errorBuilder: (context, error, stackTrace) {
         return _buildErrorWidget();
       },

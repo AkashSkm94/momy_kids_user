@@ -189,7 +189,7 @@ class _RegisterViewState extends State<RegisterView> {
           // Children Count Field
           _buildTextField(
             controller: _childrenCountController,
-            icon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.ickids,),
+            icon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icKids,),
             labelText: localizations.translate('children_count'),
             hintText: localizations.translate('children_count'),
             keyboardType: TextInputType.number,
@@ -435,7 +435,8 @@ class _RegisterViewState extends State<RegisterView> {
         
         // Navigate to home page
         NavigationService.navigateAndReplace(AppRoutes.emailOtpVerified,arguments: {
-          'email':_viewModel.email
+          'email':_viewModel.email,
+          'from': AppRoutes.register
         });
       } else {
         if (_viewModel.errorMessage.isNotEmpty) {

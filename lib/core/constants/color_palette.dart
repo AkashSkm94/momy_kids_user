@@ -9,6 +9,11 @@ class ColorPalette {
   static const Color sheetBackground = Colors.white;
   static const Color pageBackground = Colors.white;
   static const Color iconGray = Color(0xFF808488);
+  static const Color txtLight = Color(0xFF222B45);
+  static const Color txtRed = Color(0xFFEA4235);
+  static const Color bottomBarText = Color(0xFF838AA3);
+  static const Color bottomUnselectIcon = Color(0xFF979797);
+  static const Color tabSelected = Color(0xFFA9C5FF);
   static const Gradient primaryGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,

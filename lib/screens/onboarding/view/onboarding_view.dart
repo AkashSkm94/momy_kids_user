@@ -61,7 +61,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                         
                         // Text Content
                         const SizedBox(height: 20),
-                        _buildTextContent(),
+                        _buildTextContent(localizations),
 
                         const SizedBox(height: 20),
                         
@@ -81,12 +81,12 @@ class _OnboardingViewState extends State<OnboardingView> {
     );
   }
 
-  Widget _buildTextContent() {
-    return const Column(
+  Widget _buildTextContent(AppLocalizations localizations) {
+    return Column(
       children: [
         // Main heading
         HeadingText(
-          text: 'LOREM IPSUM',
+          text: localizations.translate('welcome'),
           textAlign: TextAlign.center,
         ),
         
@@ -94,7 +94,16 @@ class _OnboardingViewState extends State<OnboardingView> {
         
         // Description
         BodyText(
-          text: 'Lorem Ipsum is a dummy text used as placeholder',
+          text: localizations.translate('welcome_subtitle'),
+          textAlign: TextAlign.center,
+          color: ColorPalette.textSecondary,
+          fontSize: 16,
+        ),
+        SizedBox(height: 16),
+
+        // Description
+        BodyText(
+          text: localizations.translate('welcome_subtitle2'),
           textAlign: TextAlign.center,
           color: ColorPalette.textSecondary,
           fontSize: 16,

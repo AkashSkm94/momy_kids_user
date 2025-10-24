@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/images_utils.dart';
 import '../../../../core/constants/color_palette.dart';
@@ -62,10 +63,20 @@ class _LoginViewState extends State<LoginView> {
                     LanguageButton(
                       currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
                       onTap: () async {
+                        // Unfocus any text field to close keyboard before language change
+                        FocusScope.of(context).unfocus();
+                        
                         final languageChanged = await showLanguageDialog(context);
                         if (languageChanged && mounted) {
-                          // Update error messages when language changes
-                          _viewModel.onLanguageChanged();
+                          // Reset form and hide error messages when language changes
+                          _emailController.clear();
+                          _passwordController.clear();
+                          _formKey.currentState?.reset();
+                          _viewModel.clearError();
+                          _viewModel.setEmail('');
+                          _viewModel.setPassword('');
+                          
+                          // Force rebuild to update keyboard language
                           setState(() {});
                         }
                       },
@@ -151,6 +162,15 @@ class _LoginViewState extends State<LoginView> {
             onChanged: (value) {
               _viewModel.setEmail(value);
             },
+            validator: (value){
+              if (value == null || value.isEmpty) {
+                return localizations.translate('email_required');
+              }
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                return localizations.translate('valid_email_required');
+              }
+              return null;
+            },
           ),
           
           const SizedBox(height: 20),
@@ -222,7 +242,7 @@ class _LoginViewState extends State<LoginView> {
     if (_formKey.currentState!.validate()) {
       await _viewModel.login(context);
       if (_viewModel.isSuccess) {
-        NavigationService.navigateAndClearStack(AppRoutes.home);
+        NavigationService.navigateAndClearStack(AppRoutes.profile);
       } else {
         if (_viewModel.errorMessage.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(

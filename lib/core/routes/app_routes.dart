@@ -5,6 +5,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
   static const String mobileNumberVerified = '/mobile-number-verified';
   static const String mobileNumberOtpVerified = '/mobile-number-otp-verified';
   static const String emailOtpVerified = '/email-otp-verified';
@@ -22,6 +23,7 @@ class AppRoutes {
     'login': login,
     'register': register,
     'forgotPassword': forgotPassword,
+    'resetPassword': resetPassword,
     'mobileNumberVerified': mobileNumberVerified,
     'mobileNumberOtpVerified': mobileNumberOtpVerified,
     'emailOtpVerified': emailOtpVerified,

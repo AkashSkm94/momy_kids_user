@@ -12,8 +12,9 @@ import 'primary-button.dart';
 
 class EmailSuccessBottomSheet extends StatelessWidget {
   final String email;
-  
-  const EmailSuccessBottomSheet({super.key, required this.email});
+  final String from;
+
+  const EmailSuccessBottomSheet({super.key, required this.email, required this.from});
   
   @override
   Widget build(BuildContext context) {
@@ -76,7 +77,14 @@ class EmailSuccessBottomSheet extends StatelessWidget {
                     
                     Navigator.pop(context);
                     // Navigate to the next screen (e.g., home or dashboard)
-                    NavigationService.navigateAndReplace(AppRoutes.home);
+                    if(from.contains(AppRoutes.register)) {
+                      NavigationService.navigateAndReplace(AppRoutes.home);
+                    }else{
+                      NavigationService.navigateAndReplace(AppRoutes.resetPassword,arguments: {
+                        'token': " ",
+                        'email': from,
+                      });
+                    }
                   },
                 ),
               ),
@@ -90,14 +98,14 @@ class EmailSuccessBottomSheet extends StatelessWidget {
   }
 
   /// Static method to show the bottom sheet
-  static void show(BuildContext context, {required String email}) {
+  static void show(BuildContext context, {required String email,required String from}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: false,
       enableDrag: false,
-      builder: (context) => EmailSuccessBottomSheet(email: email),
+      builder: (context) => EmailSuccessBottomSheet(email: email,from: from),
     );
   }
 }
