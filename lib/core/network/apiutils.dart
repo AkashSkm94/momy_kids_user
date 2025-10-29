@@ -277,6 +277,80 @@ class ApiUtils {
     }
   }
 
+  /// PUT request with multipart form data
+  static Future<ApiResponse> putMultipart({
+    required String endpoint,
+    Map<String, String>? fields,
+    String? filePath,
+    String? fileFieldName,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Check internet connection
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      // Create multipart request with PUT method
+      final request = http.MultipartRequest(
+        'PUT',
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+      );
+
+      // Add headers
+      request.headers.addAll({
+        'Accept': 'application/json',
+        ...?headers,
+      });
+
+      // Add authorization header if token exists
+      final token = await _getAuthToken();
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+
+      // Add fields
+      if (fields != null) {
+        request.fields.addAll(fields);
+      }
+
+      // Add file if provided
+      if (filePath != null && fileFieldName != null) {
+        final file = File(filePath);
+        if (await file.exists()) {
+          request.files.add(
+            await http.MultipartFile.fromPath(fileFieldName, filePath),
+          );
+        }
+      }
+
+      print('PUT Multipart Request to: ${request.url}');
+      print('Fields: ${request.fields}');
+      print('Files: ${request.files.length}');
+
+      // Send request
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: _timeoutDuration),
+      );
+
+      // Convert to regular response
+      final response = await http.Response.fromStream(streamedResponse);
+      print('Response: ${response.body}');
+      
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Upload error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
   /// Handle HTTP response
   static ApiResponse _handleResponse(http.Response response) {
     try {

@@ -6,8 +6,8 @@ import '../../../../core/localization/appLocalization.dart';
 class ResetPasswordViewModel extends ChangeNotifier {
   String _newPassword = '';
   String _confirmPassword = '';
-  String? _token;
   String? _email;
+  String _otpCode = '';
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
@@ -19,8 +19,8 @@ class ResetPasswordViewModel extends ChangeNotifier {
   // Getters
   String get newPassword => _newPassword;
   String get confirmPassword => _confirmPassword;
-  String? get token => _token;
   String? get email => _email;
+  String get otpCode => _otpCode;
   bool get obscureNewPassword => _obscureNewPassword;
   bool get obscureConfirmPassword => _obscureConfirmPassword;
   bool get isLoading => _isLoading;
@@ -40,12 +40,13 @@ class ResetPasswordViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setToken(String? token) {
-    _token = token;
-  }
 
   void setEmail(String? email) {
     _email = email;
+  }
+
+  void setOtpCode(String otpCode) {
+    _otpCode = otpCode;
   }
 
   void toggleNewPasswordVisibility() {
@@ -158,23 +159,21 @@ class ResetPasswordViewModel extends ChangeNotifier {
       final response = await ApiUtils.post(
         endpoint: UrlManager.resetPassword,
         body: {
-          'token': _token,
           'email': _email,
-          'password': _newPassword,
-          'password_confirmation': _confirmPassword,
+          'otpCode': otpCode,
+          'newPassword': _newPassword,
+          'confirmPassword': _confirmPassword,
         },
       );
 
       if (response.isSuccess) {
         setSuccess(true);
       } else {
+        // Translate the error message from API response
         final errorMsg = response.message.isNotEmpty 
-            ? response.message 
+            ? localizations.translate(response.message) 
             : localizations.translate('forgot_password_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'forgot_password_failed' : '',
-        );
+        setError(errorMsg);
       }
     } catch (e) {
       setError(
@@ -190,8 +189,8 @@ class ResetPasswordViewModel extends ChangeNotifier {
   void reset() {
     _newPassword = '';
     _confirmPassword = '';
-    _token = null;
-    _email = null;
+    _email = "";
+    _otpCode = '';
     _obscureNewPassword = true;
     _obscureConfirmPassword = true;
     _isLoading = false;

@@ -8,7 +8,7 @@ import '../../../core/localization/appLocalization.dart';
 class MobileNumberOtpVerifiedViewModel extends ChangeNotifier {
   final List<String> _otpDigits = List.generate(6, (index) => '');
   bool _isLoading = false;
-  int _resendCountdown = 30;
+  int _resendCountdown = 60;
   bool _canResend = false;
   String _errorMessage = '';
   String _errorKey = '';
@@ -117,7 +117,7 @@ class MobileNumberOtpVerifiedViewModel extends ChangeNotifier {
 
   // Start countdown timer
   void startResendCountdown() {
-    _resendCountdown = 30;
+    _resendCountdown = 60;
     _canResend = false;
     notifyListeners();
     _countdown();
@@ -183,12 +183,11 @@ class MobileNumberOtpVerifiedViewModel extends ChangeNotifier {
         setSuccess(true);
         // Success will be handled in the view to show bottom sheet
       } else {
-        // Show error message from API
-        final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('otp_verification_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'otp_verification_failed' : '',
-        );
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('otp_verification_failed');
+        setError(errorMsg,errorKey: response.message);
         setSuccess(false);
       }
     } catch (e) {

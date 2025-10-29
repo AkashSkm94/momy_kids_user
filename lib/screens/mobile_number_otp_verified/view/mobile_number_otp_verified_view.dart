@@ -12,7 +12,6 @@ import '../../../core/components/primary-button.dart';
 import '../../../core/components/language_dialog.dart';
 import '../../../core/components/otp_success_bottom_sheet.dart';
 import '../view_model/mobile_number_otp_verified_view_model.dart';
-import '../../mobile_number_verified/view_model/mobile_number_verified_view_model.dart';
 
 class MobileNumberOtpVerifiedView extends StatefulWidget {
   final String? phoneNumber;
@@ -172,64 +171,66 @@ class _MobileNumberOtpVerifiedViewState extends State<MobileNumberOtpVerifiedVie
   }
 
   Widget _buildOtpInputFields() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(6, (index) {
-        return Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: ColorPalette.primary.withOpacity(0.3),
-              width: 1,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(6, (index) {
+          return Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: ColorPalette.primary.withOpacity(0.3),
+                width: 1,
+              ),
+              color: Colors.white,
             ),
-            color: Colors.white,
-          ),
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: TextFormField(
-              controller: _otpControllers[index],
-              focusNode: _focusNodes[index],
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              maxLength: 1,
+            child: Directionality(
               textDirection: TextDirection.ltr,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 24,
-                color: ColorPalette.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
-              decoration: const InputDecoration(
-                counterText: '',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              onChanged: (value) {
-                _viewModel.setOtpDigit(index, value);
-                if (value.isNotEmpty) {
-                  if (index < 5) {
-                    _focusNodes[index + 1].requestFocus();
-                  } else {
-                    _focusNodes[index].unfocus();
+              child: TextFormField(
+                controller: _otpControllers[index],
+                focusNode: _focusNodes[index],
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 1,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 24,
+                  color: ColorPalette.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onChanged: (value) {
+                  _viewModel.setOtpDigit(index, value);
+                  if (value.isNotEmpty) {
+                    if (index < 5) {
+                      _focusNodes[index + 1].requestFocus();
+                    } else {
+                      _focusNodes[index].unfocus();
+                    }
+                  } else if (value.isEmpty && index > 0) {
+                    _focusNodes[index - 1].requestFocus();
                   }
-                } else if (value.isEmpty && index > 0) {
-                  _focusNodes[index - 1].requestFocus();
-                }
-              },
-              onTap: () {
-                _otpControllers[index].selection = TextSelection.fromPosition(
-                  TextPosition(offset: _otpControllers[index].text.length),
-                );
-              },
+                },
+                onTap: () {
+                  _otpControllers[index].selection = TextSelection.fromPosition(
+                    TextPosition(offset: _otpControllers[index].text.length),
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 

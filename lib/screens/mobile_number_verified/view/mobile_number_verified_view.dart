@@ -139,7 +139,7 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
           ),
           const SizedBox(height: 16),
 
-          _buildPhoneNumberField(),
+          _buildPhoneNumberField(localizations),
           
           // Error Message Display
           Consumer<MobileNumberVerifiedViewModel>(
@@ -171,7 +171,7 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
     );
   }
 
-  Widget _buildPhoneNumberField() {
+  Widget _buildPhoneNumberField(AppLocalizations localizations) {
     return Consumer<MobileNumberVerifiedViewModel>(
       builder: (context, viewModel, child) {
         return Container(
@@ -189,7 +189,8 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
             children: [
               // Country Code Dropdown
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                height: 48, // Fixed height to reduce dropdown size
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDEE9FF),
                   borderRadius: const BorderRadius.only(
@@ -204,33 +205,36 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: viewModel.selectedCountry,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: ColorPalette.primary),
+                    icon: const Icon(Icons.keyboard_arrow_down, color: ColorPalette.primary, size: 20),
+                    iconSize: 20,
                     style: const TextStyle(
                       fontFamily: 'Montserrat',
-                      fontSize: 16,
+                      fontSize: 14,
                       color: ColorPalette.textPrimary,
                     ),
+                    isExpanded: false,
+                    isDense: true,
                     items: viewModel.countryCodes.map((country) {
                       return DropdownMenuItem<String>(
                         value: country['country'],
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              country['country']!,
-                              style: const TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 14,
-                                color: ColorPalette.textSecondary,
-                              ),
+                        child: Container(
+                          height: 32, // Reduced height for dropdown items
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            country['country']!,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 12,
+                              color: ColorPalette.textSecondary,
                             ),
-                          ],
+                          ),
                         ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         viewModel.setSelectedCountry(newValue);
+                        viewModel.setError('');
                       }
                     },
                   ),
@@ -240,7 +244,8 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
               // Phone Number Input
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  height: 48, // Match the dropdown height
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(
@@ -261,18 +266,19 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
                     ],
                     style: const TextStyle(
                       fontFamily: 'Montserrat',
-                      fontSize: 16,
+                      fontSize: 14,
                       color: ColorPalette.textPrimary,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: '955-512-0951',
+                    decoration: InputDecoration(
+                      hintText: localizations.translate('phone_number'),
                       hintStyle: TextStyle(
                         fontFamily: 'Montserrat',
                         color: ColorPalette.iconGray,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      isDense: true,
                     ),
                     onChanged: (value) {
                       viewModel.setPhoneNumber(value);

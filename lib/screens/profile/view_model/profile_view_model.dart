@@ -6,8 +6,12 @@ import '../../../core/network/url_manager.dart';
 import '../../../core/localization/appLocalization.dart';
 import '../../../core/storage/local_storage_manager.dart';
 import '../model/kid_model.dart';
+import '../model/user_profile_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
+
+
+  UserProfile? _userProfile;
   String _name = '';
   String _spouseName = '';
   String _childrenCount = '';
@@ -34,6 +38,7 @@ class ProfileViewModel extends ChangeNotifier {
   Map<String, String> _errorParams = {};
 
   // Getters
+  UserProfile? get userProfile => _userProfile;
   String get name => _name;
   String get spouseName => _spouseName;
   String get childrenCount => _childrenCount;
@@ -192,34 +197,99 @@ class ProfileViewModel extends ChangeNotifier {
 
   // Load profile data from local storage or API
   Future<void> loadProfile(BuildContext context) async {
+    final localizations = AppLocalizations.of(context);
     setLoading(true);
     clearError();
 
     try {
       final storage = await LocalStorageManager.getInstance();
+
+      // Get userId from local storage
+      final userId = storage.getString(LocalStorageManager.keyUserId);
       
-      // Load from local storage first
-      _name = storage.getString(LocalStorageManager.keyUserEmail) ?? '';
-      _email = storage.getString(LocalStorageManager.keyUserEmail) ?? '';
+      if (userId == null || userId.isEmpty) {
+        setError(
+          localizations.translate('user_id_not_found'),
+          errorKey: 'user_id_not_found',
+        );
+        setLoading(false);
+        return;
+      }
       
-      // TODO: Load from API
-      // final response = await ApiUtils.get(
-      //   endpoint: UrlManager.profile,
-      // );
+      // Replace {userId} in the endpoint with actual userId
+      final endpoint = UrlManager.profile.replaceAll('{userId}', userId);
       
-      // if (response.isSuccess && response.hasData) {
-      //   final data = response.data['data'];
-      //   _name = data['name'] ?? '';
-      //   _spouseName = data['spouse_name'] ?? '';
-      //   _childrenCount = data['children_count']?.toString() ?? '';
-      //   _phoneNumber = data['phone'] ?? '';
-      //   _email = data['email'] ?? '';
-      //   _profileImagePath = data['profile_image'] ?? '';
-      //   notifyListeners();
-      // }
+      // Call profile API
+      final response = await ApiUtils.get(
+        endpoint: endpoint,
+      );
+      
+      if (response.isSuccess && response.hasData) {
+        final data = response.data['data'];
+        if (data != null) {
+          // Parse the user profile
+          _userProfile = UserProfile.fromJson(data);
+          
+          // Update individual fields for easy access
+          _name = _userProfile!.name;
+          _email = _userProfile!.email;
+          _phoneNumber = _userProfile!.phoneNumber;
+          _profileImagePath = _userProfile!.profilePicture;
+          
+          // Update customer profile fields if available
+          if (_userProfile!.customerProfile != null) {
+            _spouseName = _userProfile!.customerProfile!.spouseName ?? '';
+            _childrenCount = _userProfile!.customerProfile!.kidsCount?.toString() ?? '';
+            _area = _userProfile!.customerProfile!.area ?? '';
+            _block = _userProfile!.customerProfile!.block ?? '';
+            _street = _userProfile!.customerProfile!.street ?? '';
+            _houseNumber = _userProfile!.customerProfile!.houseNumber ?? '';
+            _governorate = _userProfile!.customerProfile!.governorate ?? '';
+            
+            // Convert children to kids list
+            _kids = _userProfile!.customerProfile!.children.map((child) {
+              return Kid(
+                id: child.id,
+                name: child.name,
+                gender: child.gender ?? '',
+                dateOfBirth: child.dateOfBirth ?? DateTime.now(),
+              );
+            }).toList();
+          }
+          
+          // Save profile data to local storage
+          await storage.setString(LocalStorageManager.keyUserName, _name);
+          await storage.setString(LocalStorageManager.keyUserEmail, _email);
+          await storage.setString(LocalStorageManager.keyUserPhone, _phoneNumber);
+          
+          if (_spouseName.isNotEmpty) {
+            await storage.setString(LocalStorageManager.keySpouseName, _spouseName);
+          }
+          
+          if (_childrenCount.isNotEmpty) {
+            await storage.setInt(LocalStorageManager.keyKidsCount, int.tryParse(_childrenCount) ?? 0);
+          }
+          
+          notifyListeners();
+        } else {
+          setError(
+            localizations.translate('profile_data_not_found'),
+            errorKey: 'profile_data_not_found',
+          );
+        }
+      } else {
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('profile_load_failed');
+        setError(errorMsg);
+      }
       
     } catch (e) {
-      // Handle error silently or show message
+      setError(
+        localizations.translate('profile_load_failed'),
+        errorKey: 'profile_load_failed',
+      );
       print('Error loading profile: $e');
     } finally {
       setLoading(false);
@@ -242,39 +312,91 @@ class ProfileViewModel extends ChangeNotifier {
     clearError();
 
     try {
-      // TODO: Implement actual API call
-      final response = await ApiUtils.post(
-        endpoint: '/api/profile/update',
-        body: {
-          'name': _name,
-          'spouse_name': _spouseName,
-          'children_count': _childrenCount,
-          'phone': _phoneNumber,
-          'email': _email,
-        },
+      final storage = await LocalStorageManager.getInstance();
+      final userId = storage.getString(LocalStorageManager.keyUserId);
+      
+      if (userId == null || userId.isEmpty) {
+        setError(
+          localizations.translate('user_id_not_found'),
+          errorKey: 'user_id_not_found',
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Prepare form data fields
+      final fields = <String, String>{
+        'name': _name,
+        'preferredLanguage':localizations.locale!.languageCode
+      };
+
+      // Add customer profile fields
+      if (_spouseName.isNotEmpty) {
+        fields['spouseName'] = _spouseName;
+      }
+      
+      if (_childrenCount.isNotEmpty) {
+        fields['kidsCount'] = _childrenCount;
+      }
+
+      // Add address fields
+      if (_area.isNotEmpty) {
+        fields['area'] = _area;
+      }
+      
+      if (_block.isNotEmpty) {
+        fields['block'] = _block;
+      }
+      
+      if (_street.isNotEmpty) {
+        fields['street'] = _street;
+      }
+      
+      if (_houseNumber.isNotEmpty) {
+        fields['houseNumber'] = _houseNumber;
+      }
+      
+      if (_governorate.isNotEmpty) {
+        fields['governorate'] = _governorate;
+      }
+
+      // Call PUT API with multipart form data
+      final response = await ApiUtils.putMultipart(
+        endpoint: UrlManager.profileUpdate,
+        fields: fields,
+        filePath: _profileImage?.path,
+        fileFieldName: 'profilePicture',
       );
 
+      print(_profileImage?.path);
       if (response.isSuccess) {
         setSuccess(true);
         
-        // Save to local storage
-        final storage = await LocalStorageManager.getInstance();
-        await storage.setString(LocalStorageManager.keyUserEmail, _email);
+        // Save updated data to local storage
+        await storage.setString(LocalStorageManager.keyUserName, _name);
+        await storage.setString(LocalStorageManager.keyUserPhone, _phoneNumber);
+        
+        if (_spouseName.isNotEmpty) {
+          await storage.setString(LocalStorageManager.keySpouseName, _spouseName);
+        }
+        
+        if (_childrenCount.isNotEmpty) {
+          await storage.setInt(LocalStorageManager.keyKidsCount, int.tryParse(_childrenCount) ?? 0);
+        }
         
       } else {
+        // Translate the error message from API response
         final errorMsg = response.message.isNotEmpty 
-            ? response.message 
+            ? localizations.translate(response.message) 
             : localizations.translate('profile_update_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'profile_update_failed' : '',
-        );
+        setError(errorMsg);
       }
     } catch (e) {
       setError(
         localizations.translate('profile_update_failed'),
         errorKey: 'profile_update_failed',
       );
+      print('Error updating profile: $e');
     } finally {
       setLoading(false);
     }
@@ -321,6 +443,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   // Reset state
   void reset() {
+    _userProfile = null;
     _name = '';
     _spouseName = '';
     _childrenCount = '';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import '../../../../core/network/apiutils.dart';
 import '../../../../core/network/url_manager.dart';
 import '../../../../core/navigation/navigation_service.dart';
@@ -16,6 +17,8 @@ class LoginViewModel extends ChangeNotifier {
   Map<String, String> _errorParams = {};
   String? _token;
   String? _role;
+  String? _userId;
+
 
   // Getters
   String get email => _email;
@@ -142,7 +145,8 @@ class LoginViewModel extends ChangeNotifier {
         if (data != null) {
           _token = data['token'];
           _role = data['role'];
-          
+          _userId = data['userId'];
+
           // Save token to ApiUtils for API requests
           if (_token != null) {
             await ApiUtils.setAuthToken(_token!);
@@ -152,11 +156,36 @@ class LoginViewModel extends ChangeNotifier {
           final storage = await LocalStorageManager.getInstance();
           if (_token != null) {
             await storage.saveAuthToken(_token!);
+            
+            // Decode JWT token to extract userId and email
+            try {
+              Map<String, dynamic> payload = Jwt.parseJwt(_token!);
+              
+              // Extract userId and email from JWT payload
+              final userId = payload['userId']?.toString();
+              final emailFromToken = payload['email']?.toString();
+              
+              // Save userId if available
+              if (userId != null) {
+                await storage.setString(LocalStorageManager.keyUserId, userId);
+              }
+
+
+              // Save email from token if available, otherwise use login email
+              if (emailFromToken != null) {
+                await storage.setString(LocalStorageManager.keyUserEmail, emailFromToken);
+              } else {
+                await storage.setString(LocalStorageManager.keyUserEmail, _email);
+              }
+            } catch (e) {
+              // If JWT decode fails, just save the login email
+              print('Error decoding JWT: $e');
+              await storage.setString(LocalStorageManager.keyUserEmail, _email);
+            }
           }
           
           // Save user login status and role
           await storage.setBool(LocalStorageManager.keyIsLoggedIn, true);
-          await storage.setString(LocalStorageManager.keyUserEmail, _email);
           if (_role != null) {
             await storage.setString(LocalStorageManager.keyUserRole, _role!);
           }
@@ -169,12 +198,11 @@ class LoginViewModel extends ChangeNotifier {
           );
         }
       } else {
-        // Use server message if available, otherwise use generic error key
-        final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('login_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'login_failed' : '',
-        );
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('login_failed');
+        setError(errorMsg,errorKey: response.message);
       }
     } catch (e) {
       setError(
@@ -183,6 +211,58 @@ class LoginViewModel extends ChangeNotifier {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Fetch user profile after login
+  Future<void> fetchUserProfile(BuildContext context) async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      final userId = storage.getString(LocalStorageManager.keyUserId);
+      
+      if (userId != null && userId.isNotEmpty) {
+        // Replace {userId} in the endpoint with actual userId
+        final endpoint = UrlManager.profile.replaceAll('{userId}', userId);
+        
+        // Call profile API
+        final response = await ApiUtils.get(endpoint: endpoint);
+        
+        if (response.isSuccess && response.hasData) {
+          final data = response.data['data'];
+          if (data != null) {
+            // Save additional profile data to local storage
+            final name = data['name']?.toString();
+            final phoneNumber = data['phoneNumber']?.toString();
+            
+            if (name != null && name.isNotEmpty) {
+              await storage.setString(LocalStorageManager.keyUserName, name);
+            }
+            
+            if (phoneNumber != null && phoneNumber.isNotEmpty) {
+              await storage.setString(LocalStorageManager.keyUserPhone, phoneNumber);
+            }
+            
+            // Save customer profile data if available
+            if (data['customerProfile'] != null) {
+              final customerProfile = data['customerProfile'];
+              
+              final spouseName = customerProfile['spouseName']?.toString();
+              final kidsCount = customerProfile['kidsCount'];
+              
+              if (spouseName != null && spouseName.isNotEmpty) {
+                await storage.setString(LocalStorageManager.keySpouseName, spouseName);
+              }
+              
+              if (kidsCount != null) {
+                await storage.setInt(LocalStorageManager.keyKidsCount, kidsCount);
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail - profile data can be fetched later
+      print('Error fetching user profile: $e');
     }
   }
 

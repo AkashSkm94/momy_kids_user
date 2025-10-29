@@ -16,13 +16,13 @@ import '../view_model/reset_password_view_model.dart';
 
 
 class ResetPasswordView extends StatefulWidget {
-  final String? token;
   final String? email;
+  final String? otpCode;
   
   const ResetPasswordView({
     super.key,
-    this.token,
     this.email,
+    this.otpCode,
   });
 
   @override
@@ -39,8 +39,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
   void initState() {
     super.initState();
     _viewModel = ResetPasswordViewModel();
-    _viewModel.setToken(widget.token);
     _viewModel.setEmail(widget.email);
+    _viewModel.setOtpCode(widget.otpCode ?? '');
   }
 
   @override

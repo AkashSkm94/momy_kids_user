@@ -13,8 +13,9 @@ import 'primary-button.dart';
 class EmailSuccessBottomSheet extends StatelessWidget {
   final String email;
   final String from;
+  final String otpCode;
 
-  const EmailSuccessBottomSheet({super.key, required this.email, required this.from});
+  const EmailSuccessBottomSheet({super.key, required this.email, required this.from,required this.otpCode});
   
   @override
   Widget build(BuildContext context) {
@@ -77,12 +78,12 @@ class EmailSuccessBottomSheet extends StatelessWidget {
                     
                     Navigator.pop(context);
                     // Navigate to the next screen (e.g., home or dashboard)
-                    if(from.contains(AppRoutes.register)) {
+                    if(from.compareTo(AppRoutes.register) == 0) {
                       NavigationService.navigateAndReplace(AppRoutes.home);
                     }else{
                       NavigationService.navigateAndReplace(AppRoutes.resetPassword,arguments: {
-                        'token': " ",
-                        'email': from,
+                        'email': email,
+                        'otpCode': otpCode,
                       });
                     }
                   },
@@ -98,14 +99,14 @@ class EmailSuccessBottomSheet extends StatelessWidget {
   }
 
   /// Static method to show the bottom sheet
-  static void show(BuildContext context, {required String email,required String from}) {
+  static void show(BuildContext context, {required String email,required String from,required String otpCode}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: false,
       enableDrag: false,
-      builder: (context) => EmailSuccessBottomSheet(email: email,from: from),
+      builder: (context) => EmailSuccessBottomSheet(email: email,from: from,otpCode: otpCode,),
     );
   }
 }

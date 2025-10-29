@@ -89,7 +89,7 @@ class ImagePickerBottomSheet {
                           ),
                         ),
                         onPressed: () {
-                          // Your onPressed action
+                          Navigator.pop(context);
                         },
                         child: SubHeadingText(text: localizations.translate('cancel'),color: ColorPalette.primaryLight,)
                     ),

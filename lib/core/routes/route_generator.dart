@@ -38,10 +38,10 @@ class RouteGenerator {
 
       case AppRoutes.resetPassword:
         final arguments = args as Map<String, dynamic>?;
-        final token = arguments?['token'] as String?;
         final email = arguments?['email'] as String?;
+        final otpCode = arguments?['otpCode'] as String?;
         return _createRoute(
-          ResetPasswordView(token: token, email: email),
+          ResetPasswordView(email: email, otpCode: otpCode),
           settings.name!,
         );
 

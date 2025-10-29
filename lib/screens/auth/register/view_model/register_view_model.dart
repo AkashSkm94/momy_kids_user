@@ -279,11 +279,11 @@ class RegisterViewModel extends ChangeNotifier {
           );
         }
       } else {
-        final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('register_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'register_failed' : '',
-        );
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('register_failed');
+        setError(errorMsg);
       }
     } catch (e) {
       setError(

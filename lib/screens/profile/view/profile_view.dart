@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:momy_kids/core/components/image_widgets.dart';
@@ -45,7 +45,10 @@ class _ProfileViewState extends State<ProfileView> {
   void initState() {
     super.initState();
     _viewModel = ProfileViewModel();
-    _loadProfile();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfile();
+    });
+
   }
 
   Future<void> _loadProfile() async {
@@ -191,37 +194,87 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildBody(AppLocalizations localizations) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Profile Picture with Edit Button
-            _buildProfilePicture(localizations),
-            
-            const SizedBox(height: 24),
-            
-            // Tab Selector
-            _buildTabSelector(localizations),
-            
-            const SizedBox(height: 24),
-            
-            // Form Content based on selected tab
-            Consumer<ProfileViewModel>(
-              builder: (context, viewModel, child) {
-                return _buildTabContent(localizations, viewModel);
-              },
+    return Consumer<ProfileViewModel>(
+      builder: (context, viewModel, child) {
+        // Show loader when profile is being loaded
+        if (viewModel.isLoading) {
+          return Center(
+            child: CircularProgressIndicator(
+              color: ColorPalette.primary,
             ),
-            
-            const SizedBox(height: 32),
-            
-            // Update Button
-            _buildUpdateButton(localizations),
-            
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+          );
+        }
+
+        // Show error message if profile load failed
+        // if (viewModel.errorMessage.isNotEmpty) {
+        //   return Center(
+        //     child: Column(
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: [
+        //         Icon(
+        //           Icons.error_outline,
+        //           size: 60,
+        //           color: Colors.red.withOpacity(0.7),
+        //         ),
+        //         const SizedBox(height: 16),
+        //         Text(
+        //           viewModel.getTranslatedError(context),
+        //           textAlign: TextAlign.center,
+        //           style: const TextStyle(
+        //             fontFamily: 'Montserrat',
+        //             fontSize: 16,
+        //             color: ColorPalette.textSecondary,
+        //           ),
+        //         ),
+        //         const SizedBox(height: 24),
+        //         ElevatedButton.icon(
+        //           onPressed: () => _loadProfile(),
+        //           icon: const Icon(Icons.refresh),
+        //           label: Text(localizations.translate('retry')),
+        //           style: ElevatedButton.styleFrom(
+        //             backgroundColor: ColorPalette.primary,
+        //             foregroundColor: Colors.white,
+        //             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        //             shape: RoundedRectangleBorder(
+        //               borderRadius: BorderRadius.circular(12),
+        //             ),
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   );
+        // }
+
+        // Show profile content
+        return SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Profile Picture with Edit Button
+                _buildProfilePicture(localizations),
+                
+                const SizedBox(height: 24),
+                
+                // Tab Selector
+                _buildTabSelector(localizations),
+                
+                const SizedBox(height: 24),
+                
+                // Form Content based on selected tab
+                _buildTabContent(localizations, viewModel),
+                
+                const SizedBox(height: 32),
+                
+                // Update Button
+                _buildUpdateButton(localizations),
+                
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -430,91 +483,147 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildAddressForm(AppLocalizations localizations) {
-    return Column(
-      children: [
-        _buildTextField(
-          controller: _areaController,
-          image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-          labelText: localizations.translate('area'),
-          onChanged: (value) => _viewModel.setArea(value),
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+            _buildTextField(
+              controller: _areaController,
+              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
+              labelText: localizations.translate('area'),
+              onChanged: (value) => _viewModel.setArea(value),
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _blockController,
+              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
+              labelText: localizations.translate('block'),
+              onChanged: (value) => _viewModel.setBlock(value),
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _streetController,
+              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
+              labelText: localizations.translate('street'),
+              onChanged: (value) => _viewModel.setStreet(value),
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _houseNumberController,
+              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icBottomOne,iconColors: ColorPalette.primary,),
+              labelText: localizations.translate('house_number'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _viewModel.setHouseNumber(value),
+            ),
+            const SizedBox(height: 16),
+            _buildGovernorateField(localizations),
+          ],
         ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          controller: _blockController,
-          image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-          labelText: localizations.translate('block'),
-          onChanged: (value) => _viewModel.setBlock(value),
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          controller: _streetController,
-          image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-          labelText: localizations.translate('street'),
-          onChanged: (value) => _viewModel.setStreet(value),
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          controller: _houseNumberController,
-          image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icBottomOne,iconColors: ColorPalette.primary,),
-          labelText: localizations.translate('house_number'),
-          keyboardType: TextInputType.number,
-          onChanged: (value) => _viewModel.setHouseNumber(value),
-        ),
-        const SizedBox(height: 16),
-        _buildGovernorateField(localizations),
-      ],
     );
   }
 
   Widget _buildGovernorateField(AppLocalizations localizations) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    // Kuwait Governorates with English and Arabic names
+    final governorates = [
+      {'en': 'Al Asimah (Capital)', 'ar': 'العاصمة'},
+      {'en': 'Hawalli', 'ar': 'حولي'},
+      {'en': 'Farwaniya', 'ar': 'الفروانية'},
+      {'en': 'Mubarak Al-Kabeer', 'ar': 'مبارك الكبير'},
+      {'en': 'Ahmadi', 'ar': 'الأحمدي'},
+      {'en': 'Jahra', 'ar': 'الجهراء'},
+    ];
+
+    return Consumer<ProfileViewModel>(
+      builder: (context, viewModel, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          // TODO: Show governorate picker
-        },
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: localizations.translate('governorate'),
-            prefixIcon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icBuildings,iconColors: ColorPalette.primary,),
-            suffixIcon: const Icon(Icons.keyboard_arrow_down, color: ColorPalette.textSecondary, size: 20),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            labelStyle: const TextStyle(
-              fontFamily: 'Montserrat',
-              color: ColorPalette.textSecondary,
-              fontSize: 14,
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _governorateController.text.isEmpty ? null : _governorateController.text,
+             // value: "Hawalli",
+              hint: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Row(
+                  children: [
+                    BaseImage(
+                      source: ImageSource.assetIcons,
+                      assetPath: ImageUtilsPath.icBuildings,
+                      iconColors: ColorPalette.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      localizations.translate('select'),
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        color: ColorPalette.textSecondary.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              icon: const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Icon(Icons.keyboard_arrow_down, color: ColorPalette.textSecondary, size: 20),
+              ),
+              isExpanded: true,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 16,
+                color: ColorPalette.textPrimary,
+              ),
+              items: governorates.map((governorate) {
+                final isArabic = localizations.locale?.languageCode == 'ar';
+                final displayName = isArabic ? governorate['ar']! : governorate['en']!;
+                final value = isArabic ? governorate['ar']! : governorate['en']!;
+                
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        BaseImage(
+                          source: ImageSource.assetIcons,
+                          assetPath: ImageUtilsPath.icBuildings,
+                          iconColors: ColorPalette.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            displayName,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              color: ColorPalette.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  _governorateController.text = newValue;
+                  viewModel.setGovernorate(newValue);
+                }
+              },
             ),
           ),
-          child: Text(
-            _governorateController.text.isEmpty 
-                ? localizations.translate('select')
-                : _governorateController.text,
-            style: TextStyle(
-              fontFamily: 'Montserrat',
-              fontSize: 16,
-              color: _governorateController.text.isEmpty 
-                  ? ColorPalette.textSecondary.withOpacity(0.5)
-                  : ColorPalette.textPrimary,
-            ),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 

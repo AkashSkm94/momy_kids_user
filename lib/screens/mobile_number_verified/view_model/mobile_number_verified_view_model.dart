@@ -20,6 +20,7 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
   final List<Map<String, dynamic>> countryCodes = [
     {'code': '+973', 'country': 'BH', 'name': 'Bahrain', 'mobile_length': 8},
     {'code': '+20',  'country': 'EG', 'name': 'Egypt', 'mobile_length': 10},
+    {'code': '+91',  'country': 'IN', 'name': 'India', 'mobile_length': 10},
     {'code': '+98',  'country': 'IR', 'name': 'Iran', 'mobile_length': 10},
     {'code': '+964', 'country': 'IQ', 'name': 'Iraq', 'mobile_length': 10},
     {'code': '+972', 'country': 'IL', 'name': 'Israel', 'mobile_length': 9},
@@ -207,8 +208,14 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
           arguments: {'phoneNumber': _phoneNumber},
         );
       } else {
-        // Show error message from API
-        setError(response.message);
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('otp_resend_failed');
+        setError(
+          errorMsg,
+          errorKey: response.message,
+        );
       }
     } catch (e) {
       setError('Failed to send OTP: ${e.toString()}');

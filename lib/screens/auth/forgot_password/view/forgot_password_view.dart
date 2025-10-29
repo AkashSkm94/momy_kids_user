@@ -191,7 +191,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).translate('password_reset_successful')
+              AppLocalizations.of(context).translate('otp_sent_to_email')
             ),
             backgroundColor: Colors.green,
           ),

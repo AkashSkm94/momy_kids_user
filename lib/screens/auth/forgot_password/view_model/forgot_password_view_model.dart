@@ -112,11 +112,11 @@ class ForgotPasswordViewModel extends ChangeNotifier {
       if (response.isSuccess) {
         setSuccess(true);
       } else {
-        final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('forgot_password_failed');
-        setError(
-          errorMsg,
-          errorKey: response.message.isEmpty ? 'forgot_password_failed' : '',
-        );
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('forgot_password_failed');
+        setError(errorMsg);
       }
     } catch (e) {
       setError(
