@@ -6,6 +6,7 @@ import '../core/localization/appLanguage.dart';
 import '../core/localization/appLocalization.dart';
 import '../core/navigation/navigation_service.dart';
 import '../core/routes/app_routes.dart';
+import '../core/session/session_manager.dart';
 import '../core/components/text_widgets.dart';
 import '../core/components/image_widgets.dart';
 import '../core/components/app_background.dart';
@@ -81,8 +82,9 @@ class _SplashScreenState extends State<SplashScreen>
     final appLanguage = Provider.of<AppLanguage>(context, listen: false);
     Locale _appLocale = await appLanguage.fetchLocale();
     await appLanguage.changeLanguage(_appLocale);
-    NavigationService.navigateAndReplace(AppRoutes.onboarding);
-   // NavigationService.navigateAndReplace(AppRoutes.register,arguments: {'phoneNumber':"1234567890"});
+    
+    // Handle session management
+    await SessionManager.instance.handleSessionValidation(context);
   }
 
   @override

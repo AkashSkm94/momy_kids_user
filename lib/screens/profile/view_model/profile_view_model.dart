@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../../../core/localization/appLanguage.dart';
+import '../../../core/navigation/navigation_service.dart';
 import '../../../core/network/apiutils.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/localization/appLocalization.dart';
@@ -26,6 +29,7 @@ class ProfileViewModel extends ChangeNotifier {
   String _street = '';
   String _houseNumber = '';
   String _governorate = '';
+  List<String> _governorates = [];
   
   // Kids list
   List<Kid> _kids = [];
@@ -53,6 +57,7 @@ class ProfileViewModel extends ChangeNotifier {
   String get street => _street;
   String get houseNumber => _houseNumber;
   String get governorate => _governorate;
+  List<String> get governorates => _governorates;
   
   // Kids getters
   List<Kid> get kids => _kids;
@@ -116,10 +121,170 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> fetchGovernorates(BuildContext context) async {
+    try {
+      final localizations = AppLocalizations.of(context);
+
+      String language = localizations.locale!.languageCode!;
+      if(language.isNotEmpty){
+        language = language[0].toUpperCase() + language.substring(1);
+      }
+      final response = await ApiUtils.get(
+        endpoint: '${UrlManager.governorates}$language',
+      );
+      print(response);
+      if (response.isSuccess && response.hasData) {
+        final List<dynamic> list = response.data['data'] as List<dynamic>;
+        _governorates = list
+            .map((e) => (e as Map<String, dynamic>)['name'] as String)
+            .toList();
+        notifyListeners();
+      }
+    } catch (_) {
+      print("error");
+    }
+  }
+
   // Kids methods
   void addKid(Kid kid) {
     _kids.add(kid);
     notifyListeners();
+  }
+
+  // Add kids via API
+  Future<bool> addKidsToProfile(BuildContext context) async {
+    final localizations = AppLocalizations.of(context);
+    
+    if (_kids.isEmpty) {
+      setError(
+        localizations.translate('no_kids_to_add'),
+        errorKey: 'no_kids_to_add',
+      );
+      return false;
+    }
+
+    setLoading(true);
+    clearError();
+
+    try {
+      // Prepare children data for API
+      final children = _kids.map((kid) => kid.toApiJson()).toList();
+      
+      final response = await ApiUtils.post(
+        endpoint: UrlManager.addKids,
+        body: {
+          'children': children,
+        },
+      );
+
+      if (response.isSuccess) {
+        setSuccess(true);
+        return true;
+      } else {
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('kids_add_failed');
+        setError(errorMsg,);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('kids_add_failed'),
+        errorKey: 'kids_add_failed',
+      );
+      print('Error adding kids: $e');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Update kids via API
+  Future<bool> updateKidsInProfile(BuildContext context) async {
+    final localizations = AppLocalizations.of(context);
+    
+    if (_kids.isEmpty) {
+      setError(
+        localizations.translate('no_kids_to_update'),
+        errorKey: 'no_kids_to_update',
+      );
+      return false;
+    }
+
+    setLoading(true);
+    clearError();
+
+    try {
+      // Prepare children data for API update (includes IDs)
+      final children = _kids.map((kid) => kid.toUpdateApiJson()).toList();
+      
+      final response = await ApiUtils.put(
+        endpoint: UrlManager.updateKids,
+        body: {
+          'children': children,
+        },
+      );
+
+      if (response.isSuccess) {
+        setSuccess(true);
+        return true;
+      } else {
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('kids_update_failed');
+        setError(errorMsg);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('kids_update_failed'),
+        errorKey: 'kids_update_failed',
+      );
+      print('Error updating kids: $e');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Update a single kid via API
+  Future<bool> updateSingleKidInProfile(BuildContext context, Kid kid) async {
+    final localizations = AppLocalizations.of(context);
+
+    setLoading(true);
+    clearError();
+
+    try {
+      final childPayload = kid.toUpdateApiJson();
+
+      final response = await ApiUtils.put(
+        endpoint: UrlManager.updateKids,
+        body: {
+          'children': [childPayload],
+        },
+      );
+
+      if (response.isSuccess) {
+        setSuccess(true);
+        return true;
+      } else {
+        final errorMsg = response.message.isNotEmpty
+            ? localizations.translate(response.message)
+            : localizations.translate('kids_update_failed');
+        setError(errorMsg);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('kids_update_failed'),
+        errorKey: 'kids_update_failed',
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
   }
 
   void updateKid(int index, Kid kid) {
@@ -133,6 +298,44 @@ class ProfileViewModel extends ChangeNotifier {
     if (index >= 0 && index < _kids.length) {
       _kids.removeAt(index);
       notifyListeners();
+    }
+  }
+
+  // Delete kid via API
+  Future<bool> deleteKidFromProfile(BuildContext context, String childId, {int? localIndex}) async {
+    final localizations = AppLocalizations.of(context);
+    setLoading(true);
+    clearError();
+
+    try {
+      final endpoint = UrlManager.deleteKid.replaceAll('{childId}', childId);
+      final response = await ApiUtils.delete(endpoint: endpoint);
+
+      if (response.isSuccess) {
+        // Remove from local list if index provided, else search by id
+        if (localIndex != null && localIndex >= 0 && localIndex < _kids.length) {
+          _kids.removeAt(localIndex);
+        } else {
+          _kids.removeWhere((k) => k.id == childId);
+        }
+        notifyListeners();
+        setSuccess(true);
+        return true;
+      } else {
+        final errorMsg = response.message.isNotEmpty
+            ? localizations.translate(response.message)
+            : localizations.translate('kids_delete_failed');
+        setError(errorMsg);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('kids_delete_failed'),
+        errorKey: 'kids_delete_failed',
+      );
+      return false;
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -188,11 +391,12 @@ class ProfileViewModel extends ChangeNotifier {
     return translatedMessage;
   }
   
-  // Called when language changes to refresh error messages
-  void onLanguageChanged() {
+  // Called when language changes to refresh data
+  void onLanguageChanged(BuildContext context) {
     if (_errorKey.isNotEmpty) {
       notifyListeners();
     }
+    fetchGovernorates(context);
   }
 
   // Load profile data from local storage or API
@@ -269,7 +473,7 @@ class ProfileViewModel extends ChangeNotifier {
           if (_childrenCount.isNotEmpty) {
             await storage.setInt(LocalStorageManager.keyKidsCount, int.tryParse(_childrenCount) ?? 0);
           }
-          
+
           notifyListeners();
         } else {
           setError(
@@ -294,6 +498,7 @@ class ProfileViewModel extends ChangeNotifier {
     } finally {
       setLoading(false);
     }
+    await fetchGovernorates(context);
   }
 
   // Update profile
@@ -327,7 +532,7 @@ class ProfileViewModel extends ChangeNotifier {
       // Prepare form data fields
       final fields = <String, String>{
         'name': _name,
-        'preferredLanguage':localizations.locale!.languageCode
+        'preferredLanguage':localizations.locale!.languageCode,
       };
 
       // Add customer profile fields
@@ -438,6 +643,34 @@ class ProfileViewModel extends ChangeNotifier {
       );
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Save session data after successful login
+  Future<void> saveSessionData({
+    required String userId,
+    required String name,
+    required String email,
+    required String phone,
+    String? spouseName,
+    int? kidsCount,
+    String? preferredLanguage,
+    String? role,
+  }) async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      await storage.saveUserData(
+        userId: userId,
+        name: name,
+        email: email,
+        phone: phone,
+        spouseName: spouseName,
+        kidsCount: kidsCount,
+        preferredLanguage: preferredLanguage,
+        role: role,
+      );
+    } catch (e) {
+      print('Error saving session data: $e');
     }
   }
 

@@ -159,11 +159,12 @@ class ResetPasswordViewModel extends ChangeNotifier {
       final response = await ApiUtils.post(
         endpoint: UrlManager.resetPassword,
         body: {
-          'email': _email,
-          'otpCode': otpCode,
-          'newPassword': _newPassword,
-          'confirmPassword': _confirmPassword,
-        },
+          "email": "akash4@yopmail.com",
+          "otpCode": "500806",
+          "newPassword": "new123",
+          "confirmPassword": "new123"
+        }
+
       );
 
       if (response.isSuccess) {

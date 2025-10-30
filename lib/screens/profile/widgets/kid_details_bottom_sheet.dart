@@ -123,7 +123,9 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
                 SizedBox(
                   width: double.infinity,
                   child: PrimaryButton(
-                    label: localizations.translate('add_child'),
+                    label: widget.existingKid == null
+                        ? localizations.translate('add_child')
+                        : localizations.translate('update_child'),
                     onClick: _handleSaveKid,
                   ),
                 ),
@@ -382,6 +384,8 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
     }
   }
 }
+
+
 
 
 

@@ -90,6 +90,35 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
+  // Save complete session data
+  Future<void> _saveSessionData(LocalStorageManager storage, Map<String, dynamic> data) async {
+    try {
+      final userId = data['userId']?.toString() ?? _userId;
+      final name = data['name']?.toString() ?? '';
+      final email = data['email']?.toString() ?? _email;
+      final phone = data['phone']?.toString() ?? '';
+      final spouseName = data['spouseName']?.toString();
+      final kidsCount = data['kidsCount'] != null ? int.tryParse(data['kidsCount'].toString()) : null;
+      final preferredLanguage = data['preferredLanguage']?.toString();
+      final role = data['role']?.toString() ?? _role;
+
+      if (userId != null && userId.isNotEmpty) {
+        await storage.saveUserData(
+          userId: userId,
+          name: name,
+          email: email,
+          phone: phone,
+          spouseName: spouseName,
+          kidsCount: kidsCount,
+          preferredLanguage: preferredLanguage,
+          role: role,
+        );
+      }
+    } catch (e) {
+      print('Error saving session data: $e');
+    }
+  }
+
   // Validation
   bool validateEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
@@ -189,6 +218,9 @@ class LoginViewModel extends ChangeNotifier {
           if (_role != null) {
             await storage.setString(LocalStorageManager.keyUserRole, _role!);
           }
+          
+          // Save complete session data
+          await _saveSessionData(storage, data);
           
           setSuccess(true);
         } else {

@@ -172,67 +172,70 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
   }
 
   Widget _buildOtpInputFields() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(6, (index) {
-        return Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: ColorPalette.primary.withOpacity(0.3),
-              width: 1,
-            ),
-            color: Colors.white,
-          ),
-          child: Directionality(
-            textDirection: TextDirection.ltr, // Force LTR context
-            child: TextFormField(
-              controller: _otpControllers[index],
-              focusNode: _focusNodes[index],
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              textDirection: TextDirection.ltr, // Force LTR for OTP input
-              maxLength: 1,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 24,
-                color: ColorPalette.textPrimary,
-                fontWeight: FontWeight.bold,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(6, (index) {
+          return Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: ColorPalette.primary.withOpacity(0.3),
+                width: 1,
               ),
-              decoration: const InputDecoration(
-                counterText: '',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
+              color: Colors.white,
+            ),
+            child: Directionality(
+              textDirection: TextDirection.ltr, // Force LTR context
+              child: TextFormField(
+                controller: _otpControllers[index],
+                focusNode: _focusNodes[index],
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.ltr, // Force LTR for OTP input
+                maxLength: 1,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                style: const TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontSize: 24,
+                  color: ColorPalette.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
 
-              ),
-              onChanged: (value) {
-                // Ensure value is always LTR
-                final ltrValue = value.trim();
-                _viewModel.setOtpDigit(index, ltrValue);
-                if (ltrValue.isNotEmpty) {
-                  if (index < 5) {
-                    _focusNodes[index + 1].requestFocus();
-                  } else {
-                    _focusNodes[index].unfocus();
+                ),
+                onChanged: (value) {
+                  // Ensure value is always LTR
+                  final ltrValue = value.trim();
+                  _viewModel.setOtpDigit(index, ltrValue);
+                  if (ltrValue.isNotEmpty) {
+                    if (index < 5) {
+                      _focusNodes[index + 1].requestFocus();
+                    } else {
+                      _focusNodes[index].unfocus();
+                    }
+                  } else if (ltrValue.isEmpty && index > 0) {
+                    _focusNodes[index - 1].requestFocus();
                   }
-                } else if (ltrValue.isEmpty && index > 0) {
-                  _focusNodes[index - 1].requestFocus();
-                }
-              },
-              onTap: () {
-                _otpControllers[index].selection = TextSelection.fromPosition(
-                  TextPosition(offset: _otpControllers[index].text.length),
-                );
-              },
+                },
+                onTap: () {
+                  _otpControllers[index].selection = TextSelection.fromPosition(
+                    TextPosition(offset: _otpControllers[index].text.length),
+                  );
+                },
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 

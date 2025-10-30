@@ -12,9 +12,11 @@ import '../../../core/components/language_dialog.dart';
 import '../../../core/components/primary-button.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
 import '../../../core/components/image_picker_bottom_sheet.dart';
+import '../../../core/network/url_manager.dart';
 import '../view_model/profile_view_model.dart';
 import '../widgets/kid_details_bottom_sheet.dart';
 import '../model/kid_model.dart';
+import '../../../core/components/confirm_bottom_sheet.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -47,11 +49,15 @@ class _ProfileViewState extends State<ProfileView> {
     _viewModel = ProfileViewModel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfile();
+      Future.delayed(Duration(seconds: 3),() {
+         _viewModel.fetchGovernorates(context);
+      },);
     });
 
   }
 
   Future<void> _loadProfile() async {
+
     await _viewModel.loadProfile(context);
     _nameController.text = _viewModel.name;
     _spouseNameController.text = _viewModel.spouseName;
@@ -110,10 +116,10 @@ class _ProfileViewState extends State<ProfileView> {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9FF),
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
-        onPressed: () => NavigationService.goBack(),
-      ),
+      // leading: IconButton(
+      //   icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
+      //   onPressed: () => NavigationService.goBack(),
+      // ),
       title: Text(
         localizations.translate('profile'),
         style: const TextStyle(
@@ -141,6 +147,7 @@ class _ProfileViewState extends State<ProfileView> {
                   final languageChanged = await showLanguageDialog(context);
                   if (languageChanged && mounted) {
                     _viewModel.clearError();
+                    _viewModel.onLanguageChanged(context);
                     setState(() {});
                   }
                 },
@@ -181,9 +188,13 @@ class _ProfileViewState extends State<ProfileView> {
                 backgroundColor: Colors.grey[300],
                 backgroundImage: viewModel.profileImage != null
                     ? FileImage(viewModel.profileImage!)
-                    : null,
+                    : (viewModel.profileImagePath != null && viewModel.profileImagePath!.isNotEmpty)
+                        ? NetworkImage(UrlManager.imageBaseUrl + viewModel.profileImagePath!)
+                        : null,
                 child: viewModel.profileImage == null
-                    ? const Icon(Icons.person, size: 20, color: Colors.grey)
+                    ? ((viewModel.profileImagePath == null || viewModel.profileImagePath!.isEmpty)
+                        ? const Icon(Icons.person, size: 20, color: Colors.grey)
+                        : null)
                     : null,
               );
             },
@@ -205,47 +216,6 @@ class _ProfileViewState extends State<ProfileView> {
           );
         }
 
-        // Show error message if profile load failed
-        // if (viewModel.errorMessage.isNotEmpty) {
-        //   return Center(
-        //     child: Column(
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       children: [
-        //         Icon(
-        //           Icons.error_outline,
-        //           size: 60,
-        //           color: Colors.red.withOpacity(0.7),
-        //         ),
-        //         const SizedBox(height: 16),
-        //         Text(
-        //           viewModel.getTranslatedError(context),
-        //           textAlign: TextAlign.center,
-        //           style: const TextStyle(
-        //             fontFamily: 'Montserrat',
-        //             fontSize: 16,
-        //             color: ColorPalette.textSecondary,
-        //           ),
-        //         ),
-        //         const SizedBox(height: 24),
-        //         ElevatedButton.icon(
-        //           onPressed: () => _loadProfile(),
-        //           icon: const Icon(Icons.refresh),
-        //           label: Text(localizations.translate('retry')),
-        //           style: ElevatedButton.styleFrom(
-        //             backgroundColor: ColorPalette.primary,
-        //             foregroundColor: Colors.white,
-        //             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        //             shape: RoundedRectangleBorder(
-        //               borderRadius: BorderRadius.circular(12),
-        //             ),
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   );
-        // }
-
-        // Show profile content
         return SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -266,8 +236,9 @@ class _ProfileViewState extends State<ProfileView> {
                 
                 const SizedBox(height: 32),
                 
-                // Update Button
-                _buildUpdateButton(localizations),
+                // Update Button (hidden on Kids tab)
+                if (viewModel.selectedTabIndex != 2)
+                  _buildUpdateButton(localizations),
                 
                 const SizedBox(height: 20),
               ],
@@ -308,11 +279,23 @@ class _ProfileViewState extends State<ProfileView> {
                         viewModel.profileImage!,
                         fit: BoxFit.cover,
                       )
-                    : Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Colors.grey[400],
-                      ),
+                    : (viewModel.profileImagePath != null && viewModel.profileImagePath!.isNotEmpty)
+                        ? Image.network(
+                            '${UrlManager.imageBaseUrl}${viewModel.profileImagePath}',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.grey[400],
+                              );
+                            },
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Colors.grey[400],
+                          ),
               ),
             ),
             Positioned(
@@ -352,6 +335,9 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildTabSelector(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
+        if (_governorateController.text.isEmpty && viewModel.governorate.isNotEmpty) {
+          _governorateController.text = viewModel.governorate;
+        }
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -471,7 +457,7 @@ class _ProfileViewState extends State<ProfileView> {
           const SizedBox(height: 16),
           _buildTextField(
             controller: _emailController,
-            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icEmail,iconColors: ColorPalette.primary,),
+            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icEmail,iconColors: ColorPalette.iconGray,),
             labelText: localizations.translate('email'),
             keyboardType: TextInputType.emailAddress,
             onChanged: (value) => _viewModel.setEmail(value),
@@ -523,16 +509,6 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildGovernorateField(AppLocalizations localizations) {
-    // Kuwait Governorates with English and Arabic names
-    final governorates = [
-      {'en': 'Al Asimah (Capital)', 'ar': 'العاصمة'},
-      {'en': 'Hawalli', 'ar': 'حولي'},
-      {'en': 'Farwaniya', 'ar': 'الفروانية'},
-      {'en': 'Mubarak Al-Kabeer', 'ar': 'مبارك الكبير'},
-      {'en': 'Ahmadi', 'ar': 'الأحمدي'},
-      {'en': 'Jahra', 'ar': 'الجهراء'},
-    ];
-
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
         return Container(
@@ -550,7 +526,6 @@ class _ProfileViewState extends State<ProfileView> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _governorateController.text.isEmpty ? null : _governorateController.text,
-             // value: "Hawalli",
               hint: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
@@ -582,13 +557,9 @@ class _ProfileViewState extends State<ProfileView> {
                 fontSize: 16,
                 color: ColorPalette.textPrimary,
               ),
-              items: governorates.map((governorate) {
-                final isArabic = localizations.locale?.languageCode == 'ar';
-                final displayName = isArabic ? governorate['ar']! : governorate['en']!;
-                final value = isArabic ? governorate['ar']! : governorate['en']!;
-                
+              items: viewModel.governorates.map((name) {
                 return DropdownMenuItem<String>(
-                  value: value,
+                  value: name,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
@@ -601,7 +572,7 @@ class _ProfileViewState extends State<ProfileView> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            displayName,
+                            name,
                             style: const TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 16,
@@ -650,12 +621,23 @@ class _ProfileViewState extends State<ProfileView> {
                     final kid = await KidDetailsBottomSheet.show(context);
                     if (kid != null) {
                       viewModel.addKid(kid);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(localizations.translate('kid_added_successfully')),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                      // Call API to add kids
+                      final success = await viewModel.addKidsToProfile(context);
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(localizations.translate('kids_added_successfully')),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(viewModel.getTranslatedError(context)),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   },
                   icon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icAddSquare,),
@@ -677,13 +659,29 @@ class _ProfileViewState extends State<ProfileView> {
             if (viewModel.kids.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  'No kids added yet',
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    color: ColorPalette.textSecondary.withOpacity(0.7),
-                  ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      localizations.translate('no_kids_added_yet'),
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: ColorPalette.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      localizations.translate('kids_empty_state_message'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 14,
+                        color: ColorPalette.textSecondary.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else
@@ -763,19 +761,58 @@ class _ProfileViewState extends State<ProfileView> {
                         );
                         if (updatedKid != null) {
                           viewModel.updateKid(index, updatedKid);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(localizations.translate('kid_updated_successfully')),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
+                          // Call API to update only this kid
+                          final success = await viewModel.updateSingleKidInProfile(context, updatedKid);
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(localizations.translate('kids_updated_successfully')),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(viewModel.getTranslatedError(context)),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         }
                       },
                       child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icEdit)),
                   SizedBox(width: 10,),
                   InkWell(
-                      onTap: () {
-                        _showDeleteConfirmation(context, localizations, index, viewModel);
+                      onTap: () async {
+                        final confirmed = await ConfirmBottomSheet.show(
+                          context,
+                          title: localizations.translate('confirm'),
+                          message: localizations.translate('are_you_sure_delete_kid'),
+                          confirmText: localizations.translate('yes'),
+                          cancelText: localizations.translate('cancel'),
+                        );
+                        if (confirmed) {
+                          final success = await viewModel.deleteKidFromProfile(context, kid.id, localIndex: index);
+                          if (success) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(localizations.translate('kid_deleted_successfully')),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(viewModel.getTranslatedError(context)),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        }
                       },
                       child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icDelete)),
                 ],
@@ -920,7 +957,7 @@ class _ProfileViewState extends State<ProfileView> {
           labelText: labelText,
           prefixIcon: image,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: readOnly ? Colors.grey[300] : Colors.white,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -964,6 +1001,7 @@ class _ProfileViewState extends State<ProfileView> {
           suffixIcon: TextButton(
             onPressed: () {
               // TODO: Implement change phone number
+
             },
             child: Text(
               localizations.translate('change'),
