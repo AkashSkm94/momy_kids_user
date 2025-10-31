@@ -33,7 +33,7 @@
   "register": "إنشاء حساب",
   "forgot_password": "نسيت كلمة المرور؟",
   "forgot_password_title": "نسيت كلمة المرور",
-  "enter_email_to_proceed": "أدخل معرف بريدك الإلكتروني للمتابعة.",
+  "enter_email_to_proceed": "أدخل بريدك الإلكتروني المسجل",
   "reset_password_title": "إعادة تعيين كلمة المرور",
   "new_password": "كلمة المرور الجديدة",
   "new_password_placeholder": "أدخل كلمة المرور الجديدة",
@@ -111,7 +111,7 @@
   "sign_up":"اشتراك",
   "verify_phone": "تأكيد الهاتف",
   "enter_6_digit_code": "أدخل الرمز المكون من 6 أرقام الذي تم إرساله إلى هاتفك.",
-  "didnt_receive_code": "لم أستلم رمزًا",
+  "didnt_receive_code": "لم أتلقى رمزًا",
   "resend": "إعادة الإرسال",
   "submit": "إرسال",
   "enter_valid_otp": "يرجى إدخال رمز OTP صحيح مكون من 6 أرقام",
@@ -221,7 +221,7 @@
   "profile_data_not_found": "لم يتم العثور على بيانات الملف الشخصي",
   "profile_load_failed": "فشل تحميل الملف الشخصي",
   "otp_sent_to_email": "تم إرسال OTP إلى البريد الإلكتروني",
-
+  "enter_email_id": "أدخل بريدك الإلكتروني",
 
   "AUTH_EMAIL_AND_PHONE_REQUIRED": "البريد الإلكتروني ورقم الهاتف مطلوبان",
   "AUTH_PHONE_NOT_VERIFIED_PLEASE_VERIFY_FIRST": "لم يتم التحقق من رقم الهاتف. يرجى التحقق أولاً.",
@@ -321,5 +321,8 @@
   "VENDOR_EMAIL_REQUIRED": "بريد البائع الإلكتروني مطلوب",
   "VENDOR_LOGIN_SUCCESSFULLY": "تم تسجيل دخول البائع بنجاح",
   "VENDOR_NOT_FOUND": "البائع غير موجود",
-  "INVALID_VENDOR_ID": "معرّف البائع غير صالح"
+  "INVALID_VENDOR_ID": "معرّف البائع غير صالح",
+  "OTP_EXPIRED": "انتهت صلاحية كلمة المرور لمرة واحدة، يرجى إعادة الإرسال",
+  "USER_NOT_FOUND": "معرف البريد الإلكتروني المدخل غير مسجل.",
+  "EMAIL_ALREADY_EXISTS": "تم تسجيل عنوان البريد الإلكتروني مسبقًا. يُرجى تسجيل الدخول باستخدام هذا البريد الإلكتروني أو التسجيل باستخدام بريد إلكتروني جديد."
 }

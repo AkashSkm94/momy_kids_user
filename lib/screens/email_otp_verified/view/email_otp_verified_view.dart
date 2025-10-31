@@ -280,7 +280,6 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
           email: _viewModel.email,
           from: widget.from,
           otpCode: _viewModel.otpCode,
-
         );
       } else if (_viewModel.errorMessage.isNotEmpty) {
         // Show error snackbar

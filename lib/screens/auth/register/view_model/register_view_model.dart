@@ -283,7 +283,7 @@ class RegisterViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('register_failed');
-        setError(errorMsg);
+        setError(errorMsg,errorKey: response.message);
       }
     } catch (e) {
       setError(

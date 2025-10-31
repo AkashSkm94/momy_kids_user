@@ -185,7 +185,7 @@ class ProfileViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('kids_add_failed');
-        setError(errorMsg,);
+        setError(errorMsg,errorKey: response.message);
         return false;
       }
     } catch (e) {
@@ -200,54 +200,6 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  // Update kids via API
-  Future<bool> updateKidsInProfile(BuildContext context) async {
-    final localizations = AppLocalizations.of(context);
-    
-    if (_kids.isEmpty) {
-      setError(
-        localizations.translate('no_kids_to_update'),
-        errorKey: 'no_kids_to_update',
-      );
-      return false;
-    }
-
-    setLoading(true);
-    clearError();
-
-    try {
-      // Prepare children data for API update (includes IDs)
-      final children = _kids.map((kid) => kid.toUpdateApiJson()).toList();
-      
-      final response = await ApiUtils.put(
-        endpoint: UrlManager.updateKids,
-        body: {
-          'children': children,
-        },
-      );
-
-      if (response.isSuccess) {
-        setSuccess(true);
-        return true;
-      } else {
-        // Translate the error message from API response
-        final errorMsg = response.message.isNotEmpty 
-            ? localizations.translate(response.message) 
-            : localizations.translate('kids_update_failed');
-        setError(errorMsg);
-        return false;
-      }
-    } catch (e) {
-      setError(
-        localizations.translate('kids_update_failed'),
-        errorKey: 'kids_update_failed',
-      );
-      print('Error updating kids: $e');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
 
   // Update a single kid via API
   Future<bool> updateSingleKidInProfile(BuildContext context, Kid kid) async {
@@ -486,7 +438,7 @@ class ProfileViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('profile_load_failed');
-        setError(errorMsg);
+        setError(errorMsg,errorKey: response.message);
       }
       
     } catch (e) {
@@ -594,7 +546,7 @@ class ProfileViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('profile_update_failed');
-        setError(errorMsg);
+        setError(errorMsg,errorKey: response.message);
       }
     } catch (e) {
       setError(

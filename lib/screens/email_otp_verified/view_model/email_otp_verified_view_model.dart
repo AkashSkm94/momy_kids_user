@@ -180,7 +180,7 @@ class EmailOtpVerifiedViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('otp_verification_failed');
         setError(
           errorMsg,
-          errorKey: response.message.isEmpty ? 'otp_verification_failed' : '',
+          errorKey: response.message,
         );
         setSuccess(false);
       }
@@ -230,7 +230,7 @@ class EmailOtpVerifiedViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty ? response.message : localizations.translate('otp_resend_failed');
         setError(
           errorMsg,
-          errorKey: response.message.isEmpty ? 'otp_resend_failed' : '',
+          errorKey: response.message,
         );
       }
     } catch (e) {

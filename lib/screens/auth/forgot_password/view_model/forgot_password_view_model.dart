@@ -116,7 +116,7 @@ class ForgotPasswordViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('forgot_password_failed');
-        setError(errorMsg);
+        setError(errorMsg,errorKey: response.message);
       }
     } catch (e) {
       setError(

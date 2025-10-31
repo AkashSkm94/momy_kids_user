@@ -33,7 +33,7 @@
   "register": "Register",
   "forgot_password": "Forgot Password?",
   "forgot_password_title": "Forgot Password",
-  "enter_email_to_proceed": "Enter your email ID to proceed.",
+  "enter_email_to_proceed": "Enter your registered email",
   "reset_password_title": "Reset Password",
   "new_password": "New Password",
   "new_password_placeholder": "Enter new password",
@@ -221,6 +221,7 @@
   "profile_data_not_found": "Profile data not found",
   "profile_load_failed": "Failed to load profile",
   "otp_sent_to_email": "OTP sent to email",
+  "enter_email_id": "Enter your email",
 
 
   "AUTH_EMAIL_AND_PHONE_REQUIRED": "Email and phoneNumber is required",
@@ -324,6 +325,9 @@
   "VENDOR_EMAIL_REQUIRED": "Vendor email is required",
   "VENDOR_LOGIN_SUCCESSFULLY": "Vendor login successful",
   "VENDOR_NOT_FOUND": "Vendor not found",
-  "INVALID_VENDOR_ID": "Invalid vendor_id"
+  "INVALID_VENDOR_ID": "Invalid vendor_id",
+  "OTP_EXPIRED": "OTP expired, please resend",
+  "USER_NOT_FOUND": "The email ID entered is not registered.",
+  "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email."
 
 }

@@ -59,14 +59,11 @@ class UrlManager {
   static const String forgotPassword = '/auth/forgot-password';
   static const String profile = '/profile/customer/{userId}';
   static const String profileUpdate = '/profile/customer/update';
-  static const String forgotOtpVerify = '/auth/verify-otp';
+  static const String forgotOtpVerify = '/auth/verify-otp'; // check
   static const String resetPassword = '/auth/reset-password';
-  static const String verifyOtp = '/auth/verify-otp';
+  static const String verifyOtp = '/auth/verify-otp'; // check
   static const String resendOtp = '/auth/resend-otp';
-  static const String logout = '/auth/logout';
-  static const String refreshToken = '/auth/refresh-token';
-  static const String changePassword = '/auth/change-password';
-  static const String verifyPhone = '/auth/verify-phone';
+
   static const String addKids = '/profile/customer/child';
   static const String updateKids = '/profile/customer/child/update';
   static const String deleteKid = '/profile/customer/child/{childId}';

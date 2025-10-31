@@ -159,10 +159,10 @@ class ResetPasswordViewModel extends ChangeNotifier {
       final response = await ApiUtils.post(
         endpoint: UrlManager.resetPassword,
         body: {
-          "email": "akash4@yopmail.com",
-          "otpCode": "500806",
-          "newPassword": "new123",
-          "confirmPassword": "new123"
+          'email': _email,
+          'otpCode': otpCode,
+          'newPassword': _newPassword,
+          'confirmPassword': _confirmPassword,
         }
 
       );
@@ -174,7 +174,7 @@ class ResetPasswordViewModel extends ChangeNotifier {
         final errorMsg = response.message.isNotEmpty 
             ? localizations.translate(response.message) 
             : localizations.translate('forgot_password_failed');
-        setError(errorMsg);
+        setError(errorMsg,errorKey: response.message);
       }
     } catch (e) {
       setError(

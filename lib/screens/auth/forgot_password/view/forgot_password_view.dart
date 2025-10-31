@@ -150,6 +150,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           EmailTextField(
             controller: _emailController,
             labelText: localizations.translate('email'),
+            hintText: localizations.translate('enter_email_id'),
             onChanged: (value) {
               _viewModel.setEmail(value);
             },

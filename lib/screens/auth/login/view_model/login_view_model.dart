@@ -246,57 +246,6 @@ class LoginViewModel extends ChangeNotifier {
     }
   }
 
-  // Fetch user profile after login
-  Future<void> fetchUserProfile(BuildContext context) async {
-    try {
-      final storage = await LocalStorageManager.getInstance();
-      final userId = storage.getString(LocalStorageManager.keyUserId);
-      
-      if (userId != null && userId.isNotEmpty) {
-        // Replace {userId} in the endpoint with actual userId
-        final endpoint = UrlManager.profile.replaceAll('{userId}', userId);
-        
-        // Call profile API
-        final response = await ApiUtils.get(endpoint: endpoint);
-        
-        if (response.isSuccess && response.hasData) {
-          final data = response.data['data'];
-          if (data != null) {
-            // Save additional profile data to local storage
-            final name = data['name']?.toString();
-            final phoneNumber = data['phoneNumber']?.toString();
-            
-            if (name != null && name.isNotEmpty) {
-              await storage.setString(LocalStorageManager.keyUserName, name);
-            }
-            
-            if (phoneNumber != null && phoneNumber.isNotEmpty) {
-              await storage.setString(LocalStorageManager.keyUserPhone, phoneNumber);
-            }
-            
-            // Save customer profile data if available
-            if (data['customerProfile'] != null) {
-              final customerProfile = data['customerProfile'];
-              
-              final spouseName = customerProfile['spouseName']?.toString();
-              final kidsCount = customerProfile['kidsCount'];
-              
-              if (spouseName != null && spouseName.isNotEmpty) {
-                await storage.setString(LocalStorageManager.keySpouseName, spouseName);
-              }
-              
-              if (kidsCount != null) {
-                await storage.setInt(LocalStorageManager.keyKidsCount, kidsCount);
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      // Silently fail - profile data can be fetched later
-      print('Error fetching user profile: $e');
-    }
-  }
 
   // Google login
   void handleGoogleLogin() {
