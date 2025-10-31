@@ -13,6 +13,7 @@ import '../../../core/components/primary-button.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
 import '../../../core/components/image_picker_bottom_sheet.dart';
 import '../../../core/network/url_manager.dart';
+import '../../../core/routes/app_routes.dart';
 import '../view_model/profile_view_model.dart';
 import '../widgets/kid_details_bottom_sheet.dart';
 import '../model/kid_model.dart';
@@ -1001,7 +1002,9 @@ class _ProfileViewState extends State<ProfileView> {
           suffixIcon: TextButton(
             onPressed: () {
               // TODO: Implement change phone number
-
+              // var data = NavigationService.navigateTo(
+              //   AppRoutes.mobileNumberVerified,arguments: {}
+              // );
             },
             child: Text(
               localizations.translate('change'),

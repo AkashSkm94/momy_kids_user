@@ -295,5 +295,35 @@
   "VENDOR_HAS_NO_ASSOCIATED_USER": "Vendor has no associated user",
   "VENDOR_ASSOCIATED_USER_NOT_FOUND": "Associated user not found",
   "VENDOR_PASSWORD_SETUP_SUCCESSFUL": "Password setup successful",
-  "VENDOR_STATUS_UPDATED_SUCCESSFULLY": "Vendor status updated successfully"
+  "VENDOR_STATUS_UPDATED_SUCCESSFULLY": "Vendor status updated successfully",
+
+  "VENDOR_NOT_FOUND": "Vendor not found",
+  "VENDOR_OTP_VERIFIED_SUCCESSFULLY": "Vendor OTP verified successfully",
+  "VENDOR_OTP_EXPIRED": "Vendor OTP expired",
+  "VENDOR_INVALID_OR_USED_OTP": "Invalid or used vendor OTP",
+  "VENDOR_PASSWORD_RESET_SUCCESSFULLY": "Vendor password reset successfully",
+  "VENDOR_PASSWORDS_DO_NOT_MATCH_RESET": "Vendor passwords do not match",
+  "VENDOR_OTP_SENT_TO_EMAIL": "Vendor OTP sent to email",
+  "VENDOR_HAS_NO_PASSWORD": "Vendor has no password set",
+  "VENDOR_INVALID_PASSWORD": "Invalid vendor password",
+  "VENDOR_EMAIL_REQUIRED": "Vendor email is required",
+  "VENDOR_LOGIN_SUCCESSFULLY": "Vendor login successful",
+
+
+  "PRODUCT_CREATED_SUCCESSFULLY": "Product created successfully",
+  "PRODUCT_UPDATED_SUCCESSFULLY": "Product updated successfully",
+  "PRODUCT_DELETED_SUCCESSFULLY": "Product deleted successfully",
+  "PRODUCT_NOT_FOUND": "Product not found",
+  "PRODUCT_ALREADY_EXISTS": "Product name already exists for this vendor",
+  "PRODUCT_INACTIVE": "Cannot update inactive product",
+  "NO_PRODUCTS_FOUND_FOR_VENDOR": "No products found for this vendor",
+  "INVALID_CATEGORY_ID": "Invalid category_id",
+  "INVALID_IMAGE_FORMAT": "Invalid image format. Allowed: jpeg, png, webp",
+  "FILE_TOO_LARGE": "File too large (max 5MB)",
+  "UNKNOWN_ERROR": "Something went wrong. Please try again later",
+  "VENDOR_EMAIL_REQUIRED": "Vendor email is required",
+  "VENDOR_LOGIN_SUCCESSFULLY": "Vendor login successful",
+  "VENDOR_NOT_FOUND": "Vendor not found",
+  "INVALID_VENDOR_ID": "Invalid vendor_id"
+
 }
