@@ -22,7 +22,7 @@ class ImageUtilsPath{
   static const String icKids = "assets/icons/ic_kids.png";
   static const String icGender = "assets/icons/ic_gender.png";
   static const String icCalender = "assets/icons/ic_calender.png";
-  
+  static const String icLanguage = "assets/icons/ic_language.png";
   // Icons - Address & Location
   static const String icMap = "assets/icons/ic_map.png";
   static const String icBuildings = "assets/icons/ic_buildings.png";

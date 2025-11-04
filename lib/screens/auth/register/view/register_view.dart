@@ -13,6 +13,7 @@ import '../../../../core/components/app_background.dart';
 import '../../../../core/components/primary-button.dart';
 import '../../../../core/components/language_dialog.dart';
 import '../../../../core/components/text_field_widgets.dart';
+import '../../../../core/utils/Common.dart';
 import '../view_model/register_view_model.dart';
 
 
@@ -79,12 +80,11 @@ class _RegisterViewState extends State<RegisterView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
-                          // Update error messages and preferred language when language changes
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
                           final appLanguage = Provider.of<AppLanguage>(context, listen: false);
                           _viewModel.setPreferredLanguage(appLanguage.appLocal.languageCode);
                           _viewModel.onLanguageChanged();
@@ -92,6 +92,7 @@ class _RegisterViewState extends State<RegisterView> {
                         }
                       },
                     ),
+
                   ],
                 ),
               ),

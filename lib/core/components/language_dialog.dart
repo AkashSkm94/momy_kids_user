@@ -148,57 +148,7 @@ class _LanguageDialogState extends State<LanguageDialog> {
 }
 
 /// Language selection button
-class LanguageButton extends StatelessWidget {
-  final String currentLanguage;
-  final VoidCallback onTap;
 
-  const LanguageButton({
-    super.key,
-    required this.currentLanguage,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: ColorPalette.primary,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: ColorPalette.primary.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.language,
-              color: Colors.white,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              currentLanguage,
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// Show language selection dialog
 /// Returns true if language was changed, false otherwise

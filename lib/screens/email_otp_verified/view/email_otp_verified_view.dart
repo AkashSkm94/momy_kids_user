@@ -10,6 +10,7 @@ import '../../../core/components/image_widgets.dart';
 import '../../../core/components/app_background.dart';
 import '../../../core/components/primary-button.dart';
 import '../../../core/components/language_dialog.dart';
+import '../../../core/utils/Common.dart';
 import '../view_model/email_otp_verified_view_model.dart';
 import '../../../core/components/email_success_bottom_sheet.dart';
 
@@ -68,16 +69,17 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
-                          _viewModel.onLanguageChanged();
-                          setState(() {});
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
+                            _viewModel.onLanguageChanged();
+                            setState(() {});
                         }
                       },
                     ),
+
                   ],
                 ),
               ),

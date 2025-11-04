@@ -13,6 +13,7 @@ import '../../../../core/components/app_background.dart';
 import '../../../../core/components/primary-button.dart';
 import '../../../../core/components/language_dialog.dart';
 import '../../../../core/components/text_field_widgets.dart';
+import '../../../../core/utils/Common.dart';
 import '../view_model/forgot_password_view_model.dart';
 
 
@@ -57,25 +58,24 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        // Unfocus any text field to close keyboard before language change
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
                         FocusScope.of(context).unfocus();
-                        
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
+                        if (mounted) {
                           // Reset form and hide error messages when language changes
                           _emailController.clear();
                           _formKey.currentState?.reset();
                           _viewModel.clearError();
                           _viewModel.setEmail('');
-                          
+
                           // Force rebuild to update keyboard language
                           setState(() {});
                         }
                       },
                     ),
+
                   ],
                 ),
               ),

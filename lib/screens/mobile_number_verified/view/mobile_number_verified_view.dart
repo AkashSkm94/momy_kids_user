@@ -10,6 +10,7 @@ import '../../../core/components/image_widgets.dart';
 import '../../../core/components/app_background.dart';
 import '../../../core/components/primary-button.dart';
 import '../../../core/components/language_dialog.dart';
+import '../../../core/utils/Common.dart';
 import '../view_model/mobile_number_verified_view_model.dart';
 
 class MobileNumberVerifiedView extends StatefulWidget {
@@ -53,11 +54,11 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
                           _viewModel.onLanguageChanged();
                           setState(() {});
                         }

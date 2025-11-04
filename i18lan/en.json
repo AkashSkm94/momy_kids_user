@@ -222,6 +222,7 @@
   "profile_load_failed": "Failed to load profile",
   "otp_sent_to_email": "OTP sent to email",
   "enter_email_id": "Enter your email",
+  "enter_password": "Enter your password",
 
 
   "AUTH_EMAIL_AND_PHONE_REQUIRED": "Email and phoneNumber is required",
@@ -328,6 +329,7 @@
   "INVALID_VENDOR_ID": "Invalid vendor_id",
   "OTP_EXPIRED": "OTP expired, please resend",
   "USER_NOT_FOUND": "The email ID entered is not registered.",
-  "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email."
+  "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email.",
+  "INVALID_PASSWORD": "Invalid Password"
 
 }

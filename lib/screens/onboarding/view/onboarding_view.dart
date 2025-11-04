@@ -9,6 +9,7 @@ import '../../../core/components/text_widgets.dart';
 import '../../../core/components/image_widgets.dart';
 import '../../../core/components/app_background.dart';
 import '../../../core/components/primary-button.dart';
+import '../../../core/utils/Common.dart';
 import '../view_model/onboarding_view_model.dart';
 
 class OnboardingView extends StatefulWidget {
@@ -86,12 +87,13 @@ class _OnboardingViewState extends State<OnboardingView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
                           setState(() {});
+
                         }
                       },
                     ),

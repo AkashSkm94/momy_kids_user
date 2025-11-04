@@ -12,6 +12,7 @@ import '../../../../core/components/image_widgets.dart';
 import '../../../../core/components/app_background.dart';
 import '../../../../core/components/primary-button.dart';
 import '../../../../core/components/language_dialog.dart';
+import '../../../../core/utils/Common.dart';
 import '../view_model/reset_password_view_model.dart';
 
 
@@ -67,22 +68,19 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        // Unfocus any text field to close keyboard before language change
-                        FocusScope.of(context).unfocus();
-                        
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
-                          // Reset form and hide error messages when language changes
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
+                          FocusScope.of(context).unfocus();
                           _newPasswordController.clear();
                           _confirmPasswordController.clear();
                           _formKey.currentState?.reset();
                           _viewModel.clearError();
                           _viewModel.setNewPassword('');
                           _viewModel.setConfirmPassword('');
-                          
+
                           // Force rebuild to update keyboard language
                           setState(() {});
                         }

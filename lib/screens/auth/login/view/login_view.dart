@@ -14,6 +14,7 @@ import '../../../../core/components/primary-button.dart';
 import '../../../../core/components/language_dialog.dart';
 import '../../../../core/components/social_login_buttons.dart';
 import '../../../../core/components/text_field_widgets.dart';
+import '../../../../core/utils/Common.dart';
 import '../view_model/login_view_model.dart';
 
 
@@ -60,22 +61,20 @@ class _LoginViewState extends State<LoginView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    LanguageButton(
-                      currentLanguage: appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                      onTap: () async {
-                        // Unfocus any text field to close keyboard before language change
-                        FocusScope.of(context).unfocus();
-                        
-                        final languageChanged = await showLanguageDialog(context);
-                        if (languageChanged && mounted) {
+                    Common.languageIcons(
+                      context: context,
+                      appLanguage: appLanguage,
+                      onLanguageChange: () {
+                        if (mounted) {
                           // Reset form and hide error messages when language changes
+                          FocusScope.of(context).unfocus();
                           _emailController.clear();
                           _passwordController.clear();
                           _formKey.currentState?.reset();
                           _viewModel.clearError();
                           _viewModel.setEmail('');
                           _viewModel.setPassword('');
-                          
+
                           // Force rebuild to update keyboard language
                           setState(() {});
                         }
@@ -159,6 +158,7 @@ class _LoginViewState extends State<LoginView> {
           EmailTextField(
             controller: _emailController,
             labelText: localizations.translate('email'),
+            hintText: localizations.translate('enter_email_id'),
             onChanged: (value) {
               _viewModel.setEmail(value);
             },
@@ -179,6 +179,7 @@ class _LoginViewState extends State<LoginView> {
           PasswordTextField(
             controller: _passwordController,
             labelText: localizations.translate('password'),
+            hintText: localizations.translate('enter_password'),
             onChanged: (value) {
               _viewModel.setPassword(value);
             },
