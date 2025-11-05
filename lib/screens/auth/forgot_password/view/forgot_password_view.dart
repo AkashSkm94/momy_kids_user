@@ -49,6 +49,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     return ChangeNotifierProvider<ForgotPasswordViewModel>(
       create: (context) => _viewModel,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         body: AppBackground(
           child: Column(
             children: [

@@ -229,9 +229,18 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
                   }
                 },
                 onTap: () {
-                  _otpControllers[index].selection = TextSelection.fromPosition(
-                    TextPosition(offset: _otpControllers[index].text.length),
-                  );
+                  // Find the first empty field from left to right
+                  int firstEmptyIndex = _getFirstEmptyIndex();
+                  
+                  // If user taps on a field that's not the first empty, move focus to first empty
+                  if (index != firstEmptyIndex) {
+                    _focusNodes[firstEmptyIndex].requestFocus();
+                  } else {
+                    // If tapping on the first empty field, select the text
+                    _otpControllers[index].selection = TextSelection.fromPosition(
+                      TextPosition(offset: _otpControllers[index].text.length),
+                    );
+                  }
                 },
               ),
             ),
@@ -239,6 +248,17 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
         }),
       ),
     );
+  }
+
+  // Helper method to find the first empty OTP field from left to right
+  int _getFirstEmptyIndex() {
+    for (int i = 0; i < 6; i++) {
+      if (_otpControllers[i].text.isEmpty) {
+        return i;
+      }
+    }
+    // If all fields are filled, return the last index
+    return 5;
   }
 
   Widget _buildResendOtp(AppLocalizations localizations) {
