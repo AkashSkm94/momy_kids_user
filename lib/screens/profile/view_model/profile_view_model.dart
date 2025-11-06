@@ -8,17 +8,19 @@ import '../../../core/network/apiutils.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/localization/appLocalization.dart';
 import '../../../core/storage/local_storage_manager.dart';
+import '../../../core/constants/country_codes.dart';
 import '../model/kid_model.dart';
 import '../model/user_profile_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
-
 
   UserProfile? _userProfile;
   String _name = '';
   String _spouseName = '';
   String _childrenCount = '';
   String _phoneNumber = '';
+  String _selectedCountryCode = '+965';
+  String _selectedCountry = 'KW';
   String _email = '';
   String? _profileImagePath;
   File? _profileImage;
@@ -47,6 +49,8 @@ class ProfileViewModel extends ChangeNotifier {
   String get spouseName => _spouseName;
   String get childrenCount => _childrenCount;
   String get phoneNumber => _phoneNumber;
+  String get selectedCountryCode => _selectedCountryCode;
+  String get selectedCountry => _selectedCountry;
   String get email => _email;
   String? get profileImagePath => _profileImagePath;
   File? get profileImage => _profileImage;
@@ -89,6 +93,16 @@ class ProfileViewModel extends ChangeNotifier {
     _phoneNumber = phoneNumber;
     notifyListeners();
   }
+
+  void setSelectedCountry(String country) {
+    _selectedCountry = country;
+    final countryData = CountryCodes.getCountryByCode(country);
+    _selectedCountryCode = countryData?['code'] as String? ?? '+965';
+    notifyListeners();
+  }
+
+  // Getter for country codes (for UI)
+  List<Map<String, dynamic>> get countryCodes => CountryCodes.countryCodes;
 
   void setEmail(String email) {
     _email = email;
@@ -710,6 +724,29 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
+  // Validation
+  bool validatePhoneNumber(String phone) {
+    if (phone.isEmpty) {
+      return false;
+    }
+    
+    // Get the expected length for the selected country
+    final expectedLength = CountryCodes.getMobileLength(_selectedCountry);
+    
+    // Validate phone number length matches the country's expected length
+    return phone.length == expectedLength;
+  }
+  
+  // Get expected mobile length for selected country
+  int getExpectedMobileLength() {
+    return CountryCodes.getMobileLength(_selectedCountry);
+  }
+  
+  // Get country name for selected country
+  String getCountryName() {
+    return CountryCodes.getCountryName(_selectedCountry);
+  }
+
   // Reset state
   void reset() {
     _userProfile = null;
@@ -717,6 +754,8 @@ class ProfileViewModel extends ChangeNotifier {
     _spouseName = '';
     _childrenCount = '';
     _phoneNumber = '';
+    _selectedCountryCode = '+965';
+    _selectedCountry = 'KW';
     _email = '';
     _profileImagePath = null;
     _profileImage = null;

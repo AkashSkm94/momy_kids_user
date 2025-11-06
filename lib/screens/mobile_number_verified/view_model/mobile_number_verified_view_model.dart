@@ -4,6 +4,7 @@ import '../../../core/routes/app_routes.dart';
 import '../../../core/network/apiutils.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/localization/appLocalization.dart';
+import '../../../core/constants/country_codes.dart';
 
 class MobileNumberVerifiedViewModel extends ChangeNotifier {
   String _phoneNumber = '';
@@ -16,27 +17,6 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
   Map<String, String> _errorParams = {};
   String _phoneId = '';
 
-  // Country codes data
-  final List<Map<String, dynamic>> countryCodes = [
-    {'code': '+973', 'country': 'BH', 'name': 'Bahrain', 'mobile_length': 8},
-    {'code': '+20',  'country': 'EG', 'name': 'Egypt', 'mobile_length': 10},
-    {'code': '+91',  'country': 'IN', 'name': 'India', 'mobile_length': 10},
-    {'code': '+98',  'country': 'IR', 'name': 'Iran', 'mobile_length': 10},
-    {'code': '+964', 'country': 'IQ', 'name': 'Iraq', 'mobile_length': 10},
-    {'code': '+972', 'country': 'IL', 'name': 'Israel', 'mobile_length': 9},
-    {'code': '+962', 'country': 'JO', 'name': 'Jordan', 'mobile_length': 9},
-    {'code': '+965', 'country': 'KW', 'name': 'Kuwait', 'mobile_length': 8},
-    {'code': '+961', 'country': 'LB', 'name': 'Lebanon', 'mobile_length': 8},
-    {'code': '+968', 'country': 'OM', 'name': 'Oman', 'mobile_length': 8},
-    {'code': '+970', 'country': 'PS', 'name': 'Palestine', 'mobile_length': 9},
-    {'code': '+974', 'country': 'QA', 'name': 'Qatar', 'mobile_length': 8},
-    {'code': '+966', 'country': 'SA', 'name': 'Saudi Arabia', 'mobile_length': 9},
-    {'code': '+963', 'country': 'SY', 'name': 'Syria', 'mobile_length': 9},
-    {'code': '+90',  'country': 'TR', 'name': 'Turkey', 'mobile_length': 10},
-    {'code': '+971', 'country': 'AE', 'name': 'United Arab Emirates (UAE)', 'mobile_length': 9},
-    {'code': '+967', 'country': 'YE', 'name': 'Yemen', 'mobile_length': 9}
-  ];
-
   // Getters
   String get phoneNumber => _phoneNumber;
   String get selectedCountryCode => _selectedCountryCode;
@@ -47,6 +27,7 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
   String get errorKey => _errorKey;
   Map<String, String> get errorParams => _errorParams;
   String get phoneId => _phoneId;
+  List<Map<String, dynamic>> get countryCodes => CountryCodes.countryCodes;
 
   // Setters
   void setPhoneNumber(String phone) {
@@ -56,8 +37,8 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
 
   void setSelectedCountry(String country) {
     _selectedCountry = country;
-    _selectedCountryCode = countryCodes
-        .firstWhere((c) => c['country'] == country)['code']!;
+    final countryData = CountryCodes.getCountryByCode(country);
+    _selectedCountryCode = countryData?['code'] as String? ?? '+965';
     notifyListeners();
   }
 
@@ -97,12 +78,7 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
     }
     
     // Get the expected length for the selected country
-    final selectedCountryData = countryCodes.firstWhere(
-      (c) => c['country'] == _selectedCountry,
-      orElse: () => {'mobile_length': 8},
-    );
-    
-    final expectedLength = selectedCountryData['mobile_length'] as int;
+    final expectedLength = CountryCodes.getMobileLength(_selectedCountry);
     
     // Validate phone number length matches the country's expected length
     return phone.length == expectedLength;
@@ -110,20 +86,12 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
   
   // Get expected mobile length for selected country
   int getExpectedMobileLength() {
-    final selectedCountryData = countryCodes.firstWhere(
-      (c) => c['country'] == _selectedCountry,
-      orElse: () => {'mobile_length': 8},
-    );
-    return selectedCountryData['mobile_length'] as int;
+    return CountryCodes.getMobileLength(_selectedCountry);
   }
   
   // Get country name for selected country
   String getCountryName() {
-    final selectedCountryData = countryCodes.firstWhere(
-      (c) => c['country'] == _selectedCountry,
-      orElse: () => {'name': 'Kuwait'},
-    );
-    return selectedCountryData['name'] as String;
+    return CountryCodes.getCountryName(_selectedCountry);
   }
   
   // Get translated error message based on current language

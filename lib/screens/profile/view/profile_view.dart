@@ -1349,78 +1349,203 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildPhoneField(AppLocalizations localizations) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: _phoneController,
-        keyboardType: TextInputType.phone,
-        onChanged: (value) => _viewModel.setPhoneNumber(value),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return localizations.translate('phone_required');
-          }
-          return null;
-        },
-        style: const TextStyle(
-          fontFamily: 'Montserrat',
-          fontSize: 16,
-          color: ColorPalette.textPrimary,
-        ),
-        decoration: InputDecoration(
-          labelText: localizations.translate('phone_number'),
-          prefixIcon: BaseImage(
-            source: ImageSource.assetIcons,
-            assetPath: ImageUtilsPath.icPhoneGray,
-            iconColors: ColorPalette.primary,
-          ),
-          suffixIcon: TextButton(
-            onPressed: () {
-              // TODO: Implement change phone number
-              // var data = NavigationService.navigateTo(
-              //   AppRoutes.mobileNumberVerified,arguments: {}
-              // );
-            },
-            child: Text(
-              localizations.translate('change'),
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: ColorPalette.primary,
-              ),
-            ),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          labelStyle: const TextStyle(
-            fontFamily: 'Montserrat',
-            color: ColorPalette.textSecondary,
-            fontSize: 14,
-          ),
-          errorStyle: const TextStyle(
-            fontFamily: 'Montserrat',
-            fontSize: 12,
-          ),
-        ),
-      ),
+    return Consumer<ProfileViewModel>(
+      builder: (context, viewModel, child) {
+        return FormField<String>(
+          initialValue: _phoneController.text,
+          builder: (FormFieldState<String> field) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Country Code Dropdown
+                      Container(
+                        height: 56,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDEE9FF),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            bottomLeft: Radius.circular(12),
+                          ),
+                          border: Border.all(
+                            color: ColorPalette.primary.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: viewModel.selectedCountry,
+                            icon: const Icon(Icons.keyboard_arrow_down, color: ColorPalette.primary, size: 20),
+                            iconSize: 20,
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 14,
+                              color: ColorPalette.textPrimary,
+                            ),
+                            isExpanded: false,
+                            isDense: true,
+                            items: viewModel.countryCodes.map((country) {
+                              return DropdownMenuItem<String>(
+                                value: country['country'],
+                                child: Container(
+                                  height: 32,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    country['country']!,
+                                    style: const TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontSize: 12,
+                                      color: ColorPalette.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                viewModel.setSelectedCountry(newValue);
+                                // Trigger validation when country changes
+                                field.didChange(_phoneController.text);
+                                field.validate();
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      
+                      // Phone Number Input
+                      Expanded(
+                        child: Container(
+                          height: 56,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: const BorderRadius.only(
+                              topRight: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
+                            ),
+                            border: Border.all(
+                              color: ColorPalette.primary.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(15),
+                            ],
+                            onChanged: (value) {
+                              viewModel.setPhoneNumber(value);
+                              field.didChange(value);
+                              field.validate();
+                            },
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return localizations.translate('phone_required');
+                              }
+                              if (!viewModel.validatePhoneNumber(value)) {
+                                final expectedLength = viewModel.getExpectedMobileLength();
+                                final countryName = viewModel.getCountryName();
+                                return localizations.translate('phone_length_error')
+                                    .replaceAll('{country}', countryName)
+                                    .replaceAll('{length}', expectedLength.toString());
+                              }
+                              return null;
+                            },
+                            style: const TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 16,
+                              color: ColorPalette.textPrimary,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: localizations.translate('phone_number'),
+                              hintStyle: TextStyle(
+                                fontFamily: 'Montserrat',
+                                color: ColorPalette.textSecondary.withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                              suffixIcon: TextButton(
+                                onPressed: () {
+                                  // TODO: Implement change phone number
+                                  // var data = NavigationService.navigateTo(
+                                  //   AppRoutes.mobileNumberVerified,arguments: {}
+                                  // );
+                                },
+                                child: Text(
+                                  localizations.translate('change'),
+                                  style: const TextStyle(
+                                    fontFamily: 'Montserrat',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: ColorPalette.primary,
+                                  ),
+                                ),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 16,
+                              ),
+                              errorText: null, // Hide error in TextFormField
+                              errorStyle: const TextStyle(height: 0, fontSize: 0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Display error message below the container
+                if (field.hasError && field.errorText != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, top: 4),
+                    child: Text(
+                      field.errorText!,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 12,
+                        color: Colors.red,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+          validator: (value) {
+            final phoneValue = _phoneController.text;
+            if (phoneValue.trim().isEmpty) {
+              return localizations.translate('phone_required');
+            }
+            if (!viewModel.validatePhoneNumber(phoneValue)) {
+              final expectedLength = viewModel.getExpectedMobileLength();
+              final countryName = viewModel.getCountryName();
+              return localizations.translate('phone_length_error')
+                  .replaceAll('{country}', countryName)
+                  .replaceAll('{length}', expectedLength.toString());
+            }
+            return null;
+          },
+        );
+      },
     );
   }
 
