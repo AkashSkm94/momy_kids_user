@@ -151,6 +151,39 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Check if a kid with the same name, gender, and DOB already exists
+  bool isDuplicateKid(Kid newKid, {String? excludeKidId}) {
+    return _kids.any((existingKid) {
+      // Skip the kid being updated (if excludeKidId is provided)
+      if (excludeKidId != null && existingKid.id == excludeKidId) {
+        return false;
+      }
+      
+      // Compare name (case-insensitive)
+      final nameMatches = existingKid.name.trim().toLowerCase() == 
+                         newKid.name.trim().toLowerCase();
+      
+      // Compare gender (case-insensitive)
+      final genderMatches = existingKid.gender.trim().toLowerCase() == 
+                           newKid.gender.trim().toLowerCase();
+      
+      // Compare date of birth
+      bool dobMatches = false;
+      if (existingKid.dateOfBirth == null && newKid.dateOfBirth == null) {
+        dobMatches = true;
+      } else if (existingKid.dateOfBirth != null && newKid.dateOfBirth != null) {
+        // Compare only year, month, and day (ignore time)
+        final existingDob = existingKid.dateOfBirth!;
+        final newDob = newKid.dateOfBirth!;
+        dobMatches = existingDob.year == newDob.year &&
+                    existingDob.month == newDob.month &&
+                    existingDob.day == newDob.day;
+      }
+      
+      return nameMatches && genderMatches && dobMatches;
+    });
+  }
+
   // Add kids via API
   Future<bool> addKidsToProfile(BuildContext context) async {
     final localizations = AppLocalizations.of(context);

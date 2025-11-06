@@ -767,6 +767,20 @@ class _ProfileViewState extends State<ProfileView> {
                     if (!this.mounted) return;
                     
                     if (kid != null) {
+                      // Check for duplicate before adding
+                      if (viewModel.isDuplicateKid(kid)) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              currentLocalizations.translate('duplicate_kid_error'),
+                            ),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                        return;
+                      }
+                      
                       viewModel.addKid(kid);
                       // Call API to add kids
                       final success = await viewModel.addKidsToProfile(context);
@@ -944,6 +958,20 @@ class _ProfileViewState extends State<ProfileView> {
                       if (!this.mounted) return;
                       
                       if (updatedKid != null) {
+                        // Check for duplicate before updating (exclude current kid)
+                        if (viewModel.isDuplicateKid(updatedKid, excludeKidId: kid.id)) {
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                currentLocalizations.translate('duplicate_kid_error'),
+                              ),
+                              backgroundColor: Colors.red,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                          return;
+                        }
+                        
                         viewModel.updateKid(index, updatedKid);
                         // Call API to update only this kid
                         final success = await viewModel
