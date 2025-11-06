@@ -340,5 +340,5 @@
   "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email.",
   "INVALID_PASSWORD": "Invalid Password",
   "INVALID_OR_USED_OTP": "The OTP you entered is invalid or has already been used. Please request a new one.",
-  "INVALID_OTP": "Invalid OTP"
+  "INVALID_OTP": "Invalid OTP. Please try again."
 }
