@@ -16,8 +16,13 @@ import '../view_model/mobile_number_otp_verified_view_model.dart';
 
 class MobileNumberOtpVerifiedView extends StatefulWidget {
   final String? phoneNumber;
+  final bool fromProfile;
   
-  const MobileNumberOtpVerifiedView({super.key, this.phoneNumber});
+  const MobileNumberOtpVerifiedView({
+    super.key, 
+    this.phoneNumber,
+    this.fromProfile = false,
+  });
 
   @override
   State<MobileNumberOtpVerifiedView> createState() => _MobileNumberOtpVerifiedViewState();
@@ -290,12 +295,23 @@ class _MobileNumberOtpVerifiedViewState extends State<MobileNumberOtpVerifiedVie
     
     if (mounted) {
       if (_viewModel.isSuccess) {
-        // Show success bottom sheet
-        OtpSuccessBottomSheet.show(
-          context,
-          phoneNumber: _viewModel.phoneNumber,
-
-        );
+        if (widget.fromProfile) {
+          // Show success bottom sheet with callback to return phone number
+          OtpSuccessBottomSheet.show(
+            context,
+            phoneNumber: _viewModel.phoneNumber,
+            onProceed: () {
+              // Pop back to profile with phone number as result
+              Navigator.of(context).pop(_viewModel.phoneNumber);
+            },
+          );
+        } else {
+          // Show success bottom sheet with default behavior
+          OtpSuccessBottomSheet.show(
+            context,
+            phoneNumber: _viewModel.phoneNumber,
+          );
+        }
       } else if (_viewModel.errorMessage.isNotEmpty) {
         // Show error snackbar
         ScaffoldMessenger.of(context).showSnackBar(

@@ -10,7 +10,12 @@ import 'primary-button.dart';
 
 class OtpSuccessBottomSheet extends StatelessWidget {
   final String phoneNumber;
-  const OtpSuccessBottomSheet({super.key, required this.phoneNumber});
+  final VoidCallback? onProceed;
+  const OtpSuccessBottomSheet({
+    super.key, 
+    required this.phoneNumber,
+    this.onProceed,
+  });
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
@@ -51,8 +56,16 @@ class OtpSuccessBottomSheet extends StatelessWidget {
                 child: PrimaryButton(
                   label: localizations.translate('proceed'),
                   onClick: () {
-                    Navigator.pop(context);
-                    NavigationService.navigateAndReplace(AppRoutes.register,arguments: {'phoneNumber': phoneNumber},);
+                    Navigator.pop(context); // Close bottom sheet
+                    if (onProceed != null) {
+                      onProceed!();
+                    } else {
+                      // Default behavior: navigate to register
+                      NavigationService.navigateAndReplace(
+                        AppRoutes.register,
+                        arguments: {'phoneNumber': phoneNumber},
+                      );
+                    }
                   },
                 ),
               ),
@@ -66,14 +79,21 @@ class OtpSuccessBottomSheet extends StatelessWidget {
   }
 
   /// Static method to show the bottom sheet
-  static void show(BuildContext context, {required String phoneNumber}) {
+  static void show(
+    BuildContext context, {
+    required String phoneNumber,
+    VoidCallback? onProceed,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       isDismissible: false, // prevents closing when tapping outside
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      builder: (context) => OtpSuccessBottomSheet(phoneNumber: phoneNumber,),
+      builder: (context) => OtpSuccessBottomSheet(
+        phoneNumber: phoneNumber,
+        onProceed: onProceed,
+      ),
     );
   }
 }

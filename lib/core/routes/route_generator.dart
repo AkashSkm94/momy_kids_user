@@ -51,8 +51,12 @@ class RouteGenerator {
       case AppRoutes.mobileNumberOtpVerified:
         final arguments = args as Map<String, dynamic>?;
         final phoneNumber = arguments?['phoneNumber'] as String?;
+        final fromProfile = arguments?['fromProfile'] as bool? ?? false;
         return _createRoute(
-          MobileNumberOtpVerifiedView(phoneNumber: phoneNumber),
+          MobileNumberOtpVerifiedView(
+            phoneNumber: phoneNumber,
+            fromProfile: fromProfile,
+          ),
           settings.name!,
         );
 

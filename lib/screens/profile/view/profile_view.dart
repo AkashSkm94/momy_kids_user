@@ -13,6 +13,7 @@ import '../../../core/components/bottom_navigation_bar.dart';
 import '../../../core/components/image_picker_bottom_sheet.dart';
 import '../../../core/components/delete_image_bottom_sheet.dart';
 import '../../../core/network/url_manager.dart';
+import '../../../core/network/apiutils.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/storage/local_storage_manager.dart';
 import '../../../core/utils/Common.dart';
@@ -45,6 +46,8 @@ class _ProfileViewState extends State<ProfileView> {
 
   late ProfileViewModel _viewModel;
   int _currentBottomNavIndex = 4; // Menu tab
+  bool _isPhoneEditing = false; // Track if phone field is in edit mode
+  bool _isPhoneVerified = true; // Track if phone number is verified (true by default for existing number)
 
   // Store original values for cancel functionality
   String _originalName = '';
@@ -1448,6 +1451,7 @@ class _ProfileViewState extends State<ProfileView> {
                           child: TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
+                            readOnly: !_isPhoneEditing,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               LengthLimitingTextInputFormatter(15),
@@ -1482,15 +1486,21 @@ class _ProfileViewState extends State<ProfileView> {
                                 color: ColorPalette.textSecondary.withOpacity(0.5),
                                 fontSize: 14,
                               ),
+                              filled: true,
+                              fillColor: !_isPhoneEditing ? Colors.grey[100] : Colors.white,
                               suffixIcon: TextButton(
-                                onPressed: () {
-                                  // TODO: Implement change phone number
-                                  // var data = NavigationService.navigateTo(
-                                  //   AppRoutes.mobileNumberVerified,arguments: {}
-                                  // );
-                                },
+                                onPressed: _isPhoneEditing
+                                    ? () => _handleVerifyPhone(localizations, viewModel)
+                                    : () {
+                                        setState(() {
+                                          _isPhoneEditing = true;
+                                          _isPhoneVerified = false; // Reset verification when editing
+                                        });
+                                      },
                                 child: Text(
-                                  localizations.translate('change'),
+                                  _isPhoneEditing
+                                      ? localizations.translate('verify')
+                                      : localizations.translate('change'),
                                   style: const TextStyle(
                                     fontFamily: 'Montserrat',
                                     fontSize: 14,
@@ -1553,6 +1563,13 @@ class _ProfileViewState extends State<ProfileView> {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
         final hasChanges = _hasChanges(viewModel);
+        final phoneChanged = _phoneController.text != _originalPhoneNumber;
+        // Update button should be enabled only if:
+        // 1. There are changes, AND
+        // 2. If phone number changed, it must be verified
+        final canUpdate = hasChanges && 
+                         !viewModel.isLoading && 
+                         (!phoneChanged || _isPhoneVerified);
         return Row(
           children: [
             // Cancel Button
@@ -1564,7 +1581,7 @@ class _ProfileViewState extends State<ProfileView> {
                 label: localizations.translate('update'),
                 onClick: viewModel.isLoading ? null : _handleUpdate,
                 isLoading: viewModel.isLoading,
-                enabled: hasChanges && !viewModel.isLoading,
+                enabled: canUpdate,
               ),
             ),
             const SizedBox(width: 16),
@@ -1664,6 +1681,12 @@ class _ProfileViewState extends State<ProfileView> {
     // Restore original profile image
     _viewModel.setProfileImage(_originalProfileImage, _originalProfileImagePath);
 
+    // Reset phone editing state and verification
+    setState(() {
+      _isPhoneEditing = false;
+      _isPhoneVerified = true; // Reset to true since we're restoring original value
+    });
+
     // Clear any errors
     _viewModel.clearError();
 
@@ -1677,6 +1700,118 @@ class _ProfileViewState extends State<ProfileView> {
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  Future<void> _handleVerifyPhone(
+    AppLocalizations localizations,
+    ProfileViewModel viewModel,
+  ) async {
+    // Validate phone number
+    final phoneValue = _phoneController.text.trim();
+    if (phoneValue.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(localizations.translate('phone_required')),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (!viewModel.validatePhoneNumber(phoneValue)) {
+      final expectedLength = viewModel.getExpectedMobileLength();
+      final countryName = viewModel.getCountryName();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations.translate('phone_length_error')
+                .replaceAll('{country}', countryName)
+                .replaceAll('{length}', expectedLength.toString()),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Store context-dependent references before async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
+    try {
+      // Send OTP
+      final response = await ApiUtils.post(
+        endpoint: UrlManager.phoneVerify,
+        body: {
+          'phoneNumber': '${viewModel.selectedCountryCode}$phoneValue',
+        },
+      );
+
+      if (!mounted) return;
+
+      if (response.isSuccess) {
+        // Navigate to OTP verification screen
+        final result = await NavigationService.navigateTo(
+          AppRoutes.mobileNumberOtpVerified,
+          arguments: {
+            'phoneNumber': '${viewModel.selectedCountryCode}$phoneValue',
+            'fromProfile': true,
+          },
+        );
+
+        if (!mounted) return;
+
+        // Check if OTP verification was successful (result contains phone number)
+        if (result != null && result is String) {
+          // Update phone number in view model (without country code)
+          viewModel.setPhoneNumber(phoneValue);
+          
+          // Don't update _originalPhoneNumber yet - keep it as the old value
+          // This will enable the Update button so user can save the change
+          
+          // Mark phone as verified
+          // Make field read-only again
+          setState(() {
+            _isPhoneEditing = false;
+            _isPhoneVerified = true; // Mark phone as verified
+          });
+
+          // Show success message
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                localizations.translate('phone_verified'),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        // If result is null, OTP verification was not completed (user cancelled or failed)
+        // Field stays editable, no update needed
+      } else {
+        // Failed to send OTP
+        final errorMsg = response.message.isNotEmpty
+            ? localizations.translate(response.message)
+            : localizations.translate('otp_send_failed');
+        
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations.translate('otp_send_failed'),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleUpdate() async {
@@ -1704,6 +1839,11 @@ class _ProfileViewState extends State<ProfileView> {
         _originalGovernorate = _viewModel.governorate;
         _originalProfileImagePath = _viewModel.profileImagePath;
         _originalProfileImage = _viewModel.profileImage;
+        
+        // Reset phone verification flag after successful update
+        setState(() {
+          _isPhoneVerified = true; // Phone is verified after successful save
+        });
         
         scaffoldMessenger.showSnackBar(
           SnackBar(
