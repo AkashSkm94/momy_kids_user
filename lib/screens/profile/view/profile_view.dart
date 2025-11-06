@@ -1074,7 +1074,7 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                   ),
                   Text(
-                    localizations.translate(kid.gender.toLowerCase()),
+                    kid.gender.isEmpty ? "" : localizations.translate(kid.gender.toLowerCase()),
                     style: const TextStyle(
                       fontFamily: 'Montserrat',
                       fontSize: 14,
