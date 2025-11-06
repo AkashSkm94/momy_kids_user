@@ -70,6 +70,8 @@ class OtpSuccessBottomSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false, // prevents closing when tapping outside
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) => OtpSuccessBottomSheet(phoneNumber: phoneNumber,),
     );

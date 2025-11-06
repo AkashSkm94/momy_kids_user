@@ -298,6 +298,11 @@ class _MobileNumberOtpVerifiedViewState extends State<MobileNumberOtpVerifiedVie
         );
       } else if (_viewModel.errorMessage.isNotEmpty) {
         // Show error snackbar
+        OtpSuccessBottomSheet.show(
+          context,
+          phoneNumber: _viewModel.phoneNumber,
+
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_viewModel.getTranslatedError(context)),
