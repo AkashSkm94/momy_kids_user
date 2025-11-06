@@ -123,6 +123,8 @@
   "name_required": "الاسم مطلوب",
   "spouse_name_required": "اسم الزوج/الزوجة مطلوب",
   "children_count_required": "عدد الأطفال مطلوب",
+  "children_count_max_digits": "الحد الأقصى رقمين مسموح (حتى 99)",
+  "children_count_max_value": "الحد الأقصى للقيمة هو 99",
   "phone_required": "رقم الهاتف مطلوب",
   "valid_phone_required": "يرجى إدخال رقم هاتف صحيح",
   "phone_length_error": "رقم الهاتف لـ {country} يجب أن يكون {length} أرقام بالضبط",

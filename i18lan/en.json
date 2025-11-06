@@ -124,6 +124,8 @@
   "name_required": "Name is required",
   "spouse_name_required": "Spouse name is required",
   "children_count_required": "Children count is required",
+  "children_count_max_digits": "Maximum 2 digits allowed (up to 99)",
+  "children_count_max_value": "Maximum value is 99",
   "phone_required": "Phone number is required",
   "valid_phone_required": "Please enter a valid phone number",
   "phone_length_error": "Phone number for {country} must be exactly {length} digits",

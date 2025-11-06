@@ -508,6 +508,12 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             labelText: localizations.translate('name'),
             onChanged: (value) => _viewModel.setName(value),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return localizations.translate('name_required');
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           _buildTextField(
@@ -521,17 +527,7 @@ class _ProfileViewState extends State<ProfileView> {
             onChanged: (value) => _viewModel.setSpouseName(value),
           ),
           const SizedBox(height: 16),
-          _buildTextField(
-            controller: _childrenCountController,
-            image: BaseImage(
-              source: ImageSource.assetIcons,
-              assetPath: ImageUtilsPath.icKids,
-              iconColors: ColorPalette.primary,
-            ),
-            labelText: localizations.translate('how_many_children'),
-            keyboardType: TextInputType.number,
-            onChanged: (value) => _viewModel.setChildrenCount(value),
-          ),
+          _buildChildrenCountField(localizations),
           const SizedBox(height: 16),
           _buildPhoneField(localizations),
           const SizedBox(height: 16),
@@ -611,71 +607,66 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildGovernorateField(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Label
+
+
+            // Dropdown container
+            Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value:
-                  _governorateController.text.isEmpty
-                      ? null
-                      : _governorateController.text,
-              hint: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                child: Row(
-                  children: [
-                    BaseImage(
-                      source: ImageSource.assetIcons,
-                      assetPath: ImageUtilsPath.icBuildings,
-                      iconColors: ColorPalette.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      localizations.translate('select'),
-                      style: TextStyle(
+              child: Stack(
+                alignment: Alignment.bottomLeft,
+                children: [
+                  Positioned(
+                    top:6,
+                    left: 50,
+                    child: Text(
+                      localizations.translate('governorate'),
+                      style: const TextStyle(
                         fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        color: ColorPalette.textSecondary.withOpacity(0.5),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: ColorPalette.textSecondary,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              icon: const Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  color: ColorPalette.textSecondary,
-                  size: 20,
-                ),
-              ),
-              isExpanded: true,
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 16,
-                color: ColorPalette.textPrimary,
-              ),
-              items:
-                  viewModel.governorates.map((name) {
-                    return DropdownMenuItem<String>(
-                      value: name,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                  ),
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _governorateController.text.isEmpty
+                          ? null
+                          : _governorateController.text,
+                      icon: const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: ColorPalette.textSecondary,
+                          size: 22,
                         ),
+                      ),
+                      dropdownColor: Colors.white,
+                      style: const TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        color: ColorPalette.textPrimary,
+                      ),
+
+                      // Hint (when no value selected)
+                      hint: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: Row(
                           children: [
                             BaseImage(
@@ -683,34 +674,70 @@ class _ProfileViewState extends State<ProfileView> {
                               assetPath: ImageUtilsPath.icBuildings,
                               iconColors: ColorPalette.primary,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  fontFamily: 'Montserrat',
-                                  fontSize: 16,
-                                  color: ColorPalette.textPrimary,
-                                ),
+                            const SizedBox(width: 10),
+                            Text(
+                              localizations.translate('select'),
+                              style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                fontSize: 16,
+                                color:
+                                ColorPalette.textSecondary.withOpacity(0.6),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  _governorateController.text = newValue;
-                  viewModel.setGovernorate(newValue);
-                }
-              },
+
+                      // Items
+                      items: viewModel.governorates.map((name) {
+                        return DropdownMenuItem<String>(
+                          value: name,
+                          child: Padding(
+                            padding:
+                            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            child: Row(
+                              children: [
+                                BaseImage(
+                                  source: ImageSource.assetIcons,
+                                  assetPath: ImageUtilsPath.icBuildings,
+                                  iconColors: ColorPalette.primary,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontSize: 16,
+                                      color: ColorPalette.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+
+                      // When user selects a value
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          _governorateController.text = newValue;
+                          viewModel.setGovernorate(newValue);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         );
       },
     );
   }
+
 
   Widget _buildKidsForm(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
@@ -1149,6 +1176,7 @@ class _ProfileViewState extends State<ProfileView> {
     TextInputType? keyboardType,
     Function(String)? onChanged,
     bool readOnly = false,
+    String? Function(String?)? validator,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -1167,6 +1195,7 @@ class _ProfileViewState extends State<ProfileView> {
         keyboardType: keyboardType,
         onChanged: onChanged,
         readOnly: readOnly,
+        validator: validator,
         style: const TextStyle(
           fontFamily: 'Montserrat',
           fontSize: 16,
@@ -1177,6 +1206,91 @@ class _ProfileViewState extends State<ProfileView> {
           prefixIcon: image,
           filled: true,
           fillColor: readOnly ? Colors.grey[300] : Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          labelStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            color: ColorPalette.textSecondary,
+            fontSize: 14,
+          ),
+          errorStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChildrenCountField(AppLocalizations localizations) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: _childrenCountController,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(2),
+        ],
+        onChanged: (value) {
+          // Limit to 2 digits and max value of 99
+          if (value.isNotEmpty) {
+            final intValue = int.tryParse(value);
+            if (intValue != null && intValue > 99) {
+              // If value exceeds 99, set it to 99
+              _childrenCountController.text = '99';
+              _childrenCountController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _childrenCountController.text.length),
+              );
+              _viewModel.setChildrenCount('99');
+              return;
+            }
+          }
+          _viewModel.setChildrenCount(value);
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return null; // Allow empty, validation handled elsewhere if needed
+          }
+          final intValue = int.tryParse(value);
+          if (intValue == null) {
+            return localizations.translate('children_count_max_digits');
+          }
+          if (intValue > 99) {
+            return localizations.translate('children_count_max_value');
+          }
+          return null;
+        },
+        style: const TextStyle(
+          fontFamily: 'Montserrat',
+          fontSize: 16,
+          color: ColorPalette.textPrimary,
+        ),
+        decoration: InputDecoration(
+          labelText: localizations.translate('how_many_children'),
+          prefixIcon: BaseImage(
+            source: ImageSource.assetIcons,
+            assetPath: ImageUtilsPath.icKids,
+            iconColors: ColorPalette.primary,
+          ),
+          filled: true,
+          fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
@@ -1212,6 +1326,12 @@ class _ProfileViewState extends State<ProfileView> {
         controller: _phoneController,
         keyboardType: TextInputType.phone,
         onChanged: (value) => _viewModel.setPhoneNumber(value),
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return localizations.translate('phone_required');
+          }
+          return null;
+        },
         style: const TextStyle(
           fontFamily: 'Montserrat',
           fontSize: 16,
@@ -1256,6 +1376,10 @@ class _ProfileViewState extends State<ProfileView> {
             color: ColorPalette.textSecondary,
             fontSize: 14,
           ),
+          errorStyle: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+          ),
         ),
       ),
     );
@@ -1264,6 +1388,7 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildActionButtons(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
+        final hasChanges = _hasChanges(viewModel);
         return Row(
           children: [
             // Cancel Button
@@ -1275,6 +1400,7 @@ class _ProfileViewState extends State<ProfileView> {
                 label: localizations.translate('update'),
                 onClick: viewModel.isLoading ? null : _handleUpdate,
                 isLoading: viewModel.isLoading,
+                enabled: hasChanges && !viewModel.isLoading,
               ),
             ),
             const SizedBox(width: 16),
@@ -1324,6 +1450,26 @@ class _ProfileViewState extends State<ProfileView> {
         );
       },
     );
+  }
+
+  bool _hasChanges(ProfileViewModel viewModel) {
+    // Check if any field has changed from original values
+    if (_nameController.text != _originalName) return true;
+    if (_spouseNameController.text != _originalSpouseName) return true;
+    if (_childrenCountController.text != _originalChildrenCount) return true;
+    if (_phoneController.text != _originalPhoneNumber) return true;
+    if (_emailController.text != _originalEmail) return true;
+    if (_areaController.text != _originalArea) return true;
+    if (_blockController.text != _originalBlock) return true;
+    if (_streetController.text != _originalStreet) return true;
+    if (_houseNumberController.text != _originalHouseNumber) return true;
+    if (_governorateController.text != _originalGovernorate) return true;
+    
+    // Check profile image changes
+    if (viewModel.profileImage != _originalProfileImage) return true;
+    if (viewModel.profileImagePath != _originalProfileImagePath) return true;
+    
+    return false;
   }
 
   void _handleCancel() {
