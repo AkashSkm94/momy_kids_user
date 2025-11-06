@@ -787,6 +787,10 @@ class _ProfileViewState extends State<ProfileView> {
                       if (!this.mounted) return;
                       
                       if (success) {
+                        if (mounted) {
+                          _loadProfile();
+                        }
+                        if (!mounted) return;
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(
@@ -974,11 +978,14 @@ class _ProfileViewState extends State<ProfileView> {
                         
                         viewModel.updateKid(index, updatedKid);
                         // Call API to update only this kid
-                        final success = await viewModel
-                            .updateSingleKidInProfile(context, updatedKid);
+                        final success = await viewModel.updateSingleKidInProfile(context, updatedKid);
                         if (!this.mounted) return;
                         
                         if (success) {
+                          if (mounted) {
+                            _loadProfile();
+                          }
+                          if (!mounted) return;
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
                               content: Text(
@@ -1041,6 +1048,10 @@ class _ProfileViewState extends State<ProfileView> {
                         if (!this.mounted) return;
                         
                         if (success) {
+                          if (mounted) {
+                            _loadProfile();
+                          }
+                          if (!mounted) return;
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
                               content: Text(

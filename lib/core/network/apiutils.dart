@@ -162,7 +162,10 @@ class ApiUtils {
         headers: requestHeaders,
         body: body != null ? jsonEncode(body) : null,
       ).timeout(const Duration(seconds: _timeoutDuration));
-
+      print("url ${Uri.parse(UrlManager.getFullUrl(endpoint))}");
+      print("headers $requestHeaders");
+      print("request ${jsonEncode(body)}");
+      print("response ${response.body}");
       return _handleResponse(response);
     } catch (e) {
       return ApiResponse(
