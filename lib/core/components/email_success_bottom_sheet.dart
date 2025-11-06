@@ -79,7 +79,7 @@ class EmailSuccessBottomSheet extends StatelessWidget {
                     Navigator.pop(context);
                     // Navigate to the next screen (e.g., home or dashboard)
                     if(from.compareTo(AppRoutes.register) == 0) {
-                      NavigationService.navigateAndReplace(AppRoutes.home);
+                      NavigationService.navigateAndReplace(AppRoutes.login);
                     }else{
                       NavigationService.navigateAndReplace(AppRoutes.resetPassword,arguments: {
                         'email': email,

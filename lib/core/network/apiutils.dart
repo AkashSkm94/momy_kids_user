@@ -65,7 +65,8 @@ class ApiUtils {
         Uri.parse(url),
         headers: requestHeaders,
       ).timeout(const Duration(seconds: _timeoutDuration));
-
+      print("url $url");
+      print(response.body);
       return _handleResponse(response);
     } catch (e) {
       return ApiResponse(
@@ -205,7 +206,8 @@ class ApiUtils {
         Uri.parse(UrlManager.getFullUrl(endpoint)),
         headers: requestHeaders,
       ).timeout(const Duration(seconds: _timeoutDuration));
-
+      print('url ${UrlManager.getFullUrl(endpoint)}');
+      print(response.body);
       return _handleResponse(response);
     } catch (e) {
       return ApiResponse(

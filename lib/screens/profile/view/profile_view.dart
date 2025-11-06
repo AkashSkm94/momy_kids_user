@@ -1,4 +1,4 @@
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:momy_kids/core/components/image_widgets.dart';
@@ -8,12 +8,13 @@ import '../../../core/constants/color_palette.dart';
 import '../../../core/localization/appLanguage.dart';
 import '../../../core/localization/appLocalization.dart';
 import '../../../core/navigation/navigation_service.dart';
-import '../../../core/components/language_dialog.dart';
 import '../../../core/components/primary-button.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
 import '../../../core/components/image_picker_bottom_sheet.dart';
+import '../../../core/components/delete_image_bottom_sheet.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/utils/Common.dart';
 import '../view_model/profile_view_model.dart';
 import '../widgets/kid_details_bottom_sheet.dart';
 import '../model/kid_model.dart';
@@ -33,16 +34,30 @@ class _ProfileViewState extends State<ProfileView> {
   final _childrenCountController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
-  
+
   // Address controllers
   final _areaController = TextEditingController();
   final _blockController = TextEditingController();
   final _streetController = TextEditingController();
   final _houseNumberController = TextEditingController();
   final _governorateController = TextEditingController();
-  
+
   late ProfileViewModel _viewModel;
   int _currentBottomNavIndex = 4; // Menu tab
+
+  // Store original values for cancel functionality
+  String _originalName = '';
+  String _originalSpouseName = '';
+  String _originalChildrenCount = '';
+  String _originalPhoneNumber = '';
+  String _originalEmail = '';
+  String _originalArea = '';
+  String _originalBlock = '';
+  String _originalStreet = '';
+  String _originalHouseNumber = '';
+  String _originalGovernorate = '';
+  String? _originalProfileImagePath;
+  File? _originalProfileImage;
 
   @override
   void initState() {
@@ -50,28 +65,40 @@ class _ProfileViewState extends State<ProfileView> {
     _viewModel = ProfileViewModel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfile();
-      Future.delayed(Duration(seconds: 3),() {
-         _viewModel.fetchGovernorates(context);
-      },);
+      Future.delayed(Duration(seconds: 3), () {
+        _viewModel.fetchGovernorates(context);
+      });
     });
-
   }
 
   Future<void> _loadProfile() async {
-
     await _viewModel.loadProfile(context);
     _nameController.text = _viewModel.name;
     _spouseNameController.text = _viewModel.spouseName;
     _childrenCountController.text = _viewModel.childrenCount;
     _phoneController.text = _viewModel.phoneNumber;
     _emailController.text = _viewModel.email;
-    
+
     // Load address
     _areaController.text = _viewModel.area;
     _blockController.text = _viewModel.block;
     _streetController.text = _viewModel.street;
     _houseNumberController.text = _viewModel.houseNumber;
     _governorateController.text = _viewModel.governorate;
+
+    // Store original values for cancel functionality
+    _originalName = _viewModel.name;
+    _originalSpouseName = _viewModel.spouseName;
+    _originalChildrenCount = _viewModel.childrenCount;
+    _originalPhoneNumber = _viewModel.phoneNumber;
+    _originalEmail = _viewModel.email;
+    _originalArea = _viewModel.area;
+    _originalBlock = _viewModel.block;
+    _originalStreet = _viewModel.street;
+    _originalHouseNumber = _viewModel.houseNumber;
+    _originalGovernorate = _viewModel.governorate;
+    _originalProfileImagePath = _viewModel.profileImagePath;
+    _originalProfileImage = _viewModel.profileImage;
   }
 
   @override
@@ -93,7 +120,7 @@ class _ProfileViewState extends State<ProfileView> {
   Widget build(BuildContext context) {
     final appLanguage = Provider.of<AppLanguage>(context);
     final localizations = AppLocalizations.of(context);
-    
+
     return ChangeNotifierProvider<ProfileViewModel>(
       create: (context) => _viewModel,
       child: Scaffold(
@@ -113,7 +140,10 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(AppLanguage appLanguage, AppLocalizations localizations) {
+  PreferredSizeWidget _buildAppBar(
+    AppLanguage appLanguage,
+    AppLocalizations localizations,
+  ) {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9FF),
       elevation: 0,
@@ -134,51 +164,19 @@ class _ProfileViewState extends State<ProfileView> {
         // Language Button
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: ColorPalette.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () async {
-                  FocusScope.of(context).unfocus();
-                  final languageChanged = await showLanguageDialog(context);
-                  if (languageChanged && mounted) {
-                    _viewModel.clearError();
-                    _viewModel.onLanguageChanged(context);
-                    setState(() {});
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.language,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        appLanguage.appLocal.languageCode == 'ar' ? 'AR' : 'EN',
-                        style: const TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          child: Common.languageIcons(
+            context: context,
+            appLanguage: appLanguage,
+            onLanguageChange: () {
+              if (mounted) {
+                _viewModel.clearError();
+                _viewModel.onLanguageChanged(context);
+                setState(() {});
+              }
+            },
           ),
         ),
+
         // Profile Picture
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
@@ -187,16 +185,26 @@ class _ProfileViewState extends State<ProfileView> {
               return CircleAvatar(
                 radius: 18,
                 backgroundColor: Colors.grey[300],
-                backgroundImage: viewModel.profileImage != null
-                    ? FileImage(viewModel.profileImage!)
-                    : (viewModel.profileImagePath != null && viewModel.profileImagePath!.isNotEmpty)
-                        ? NetworkImage(UrlManager.imageBaseUrl + viewModel.profileImagePath!)
+                backgroundImage:
+                    viewModel.profileImage != null
+                        ? FileImage(viewModel.profileImage!)
+                        : (viewModel.profileImagePath != null &&
+                            viewModel.profileImagePath!.isNotEmpty)
+                        ? NetworkImage(
+                          UrlManager.imageBaseUrl + viewModel.profileImagePath!,
+                        )
                         : null,
-                child: viewModel.profileImage == null
-                    ? ((viewModel.profileImagePath == null || viewModel.profileImagePath!.isEmpty)
-                        ? const Icon(Icons.person, size: 20, color: Colors.grey)
-                        : null)
-                    : null,
+                child:
+                    viewModel.profileImage == null
+                        ? ((viewModel.profileImagePath == null ||
+                                viewModel.profileImagePath!.isEmpty)
+                            ? const Icon(
+                              Icons.person,
+                              size: 20,
+                              color: Colors.grey,
+                            )
+                            : null)
+                        : null,
               );
             },
           ),
@@ -211,9 +219,7 @@ class _ProfileViewState extends State<ProfileView> {
         // Show loader when profile is being loaded
         if (viewModel.isLoading) {
           return Center(
-            child: CircularProgressIndicator(
-              color: ColorPalette.primary,
-            ),
+            child: CircularProgressIndicator(color: ColorPalette.primary),
           );
         }
 
@@ -224,23 +230,23 @@ class _ProfileViewState extends State<ProfileView> {
               children: [
                 // Profile Picture with Edit Button
                 _buildProfilePicture(localizations),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Tab Selector
                 _buildTabSelector(localizations),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Form Content based on selected tab
                 _buildTabContent(localizations, viewModel),
-                
+
                 const SizedBox(height: 32),
-                
-                // Update Button (hidden on Kids tab)
+
+                // Update and Cancel Buttons (hidden on Kids tab)
                 if (viewModel.selectedTabIndex != 2)
-                  _buildUpdateButton(localizations),
-                
+                  _buildActionButtons(localizations),
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -275,28 +281,23 @@ class _ProfileViewState extends State<ProfileView> {
                 ],
               ),
               child: ClipOval(
-                child: viewModel.profileImage != null
-                    ? Image.file(
-                        viewModel.profileImage!,
-                        fit: BoxFit.cover,
-                      )
-                    : (viewModel.profileImagePath != null && viewModel.profileImagePath!.isNotEmpty)
+                child:
+                    viewModel.profileImage != null
+                        ? Image.file(viewModel.profileImage!, fit: BoxFit.cover)
+                        : (viewModel.profileImagePath != null &&
+                            viewModel.profileImagePath!.isNotEmpty)
                         ? Image.network(
-                            '${UrlManager.imageBaseUrl}${viewModel.profileImagePath}',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.person,
-                                size: 50,
-                                color: Colors.grey[400],
-                              );
-                            },
-                          )
-                        : Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Colors.grey[400],
-                          ),
+                          '${UrlManager.imageBaseUrl}${viewModel.profileImagePath}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.grey[400],
+                            );
+                          },
+                        )
+                        : Icon(Icons.person, size: 50, color: Colors.grey[400]),
               ),
             ),
             Positioned(
@@ -304,26 +305,54 @@ class _ProfileViewState extends State<ProfileView> {
               right: 0,
               child: GestureDetector(
                 onTap: () async {
-                  final pickedFile = await ImagePickerBottomSheet.show(context);
-                  if (pickedFile != null) {
-                    await viewModel.pickImage(context, pickedFile);
+                  // Show delete image bottom sheet first
+                  final imageAction = await DeleteImageBottomSheet.show(context);
+                  
+                  if (imageAction == ImageAction.changePicture) {
+                    // Show image picker bottom sheet
+                    final pickedFile = await ImagePickerBottomSheet.show(context);
+                    if (pickedFile != null) {
+                      await viewModel.pickImage(context, pickedFile);
+                    }
+                  } else if (imageAction == ImageAction.deletePicture) {
+                    // Delete the profile image via API
+                    final success = await viewModel.deleteProfileImage(context);
+                    if (success) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              AppLocalizations.of(context).translate(
+                                'PROFILE_PHOTO_DELETED_SUCCESSFULLY',
+                              ),
+                            ),
+                            backgroundColor: Colors.green,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    } else {
+                      if (mounted && viewModel.errorMessage.isNotEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(viewModel.getTranslatedError(context)),
+                            backgroundColor: Colors.red,
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    }
                   }
+                  // If cancel, do nothing
                 },
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: ColorPalette.primary,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 16),
                 ),
               ),
             ),
@@ -336,7 +365,8 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildTabSelector(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
-        if (_governorateController.text.isEmpty && viewModel.governorate.isNotEmpty) {
+        if (_governorateController.text.isEmpty &&
+            viewModel.governorate.isNotEmpty) {
           _governorateController.text = viewModel.governorate;
         }
         return Container(
@@ -359,21 +389,21 @@ class _ProfileViewState extends State<ProfileView> {
                 0,
                 viewModel.selectedTabIndex,
                 () => viewModel.setSelectedTabIndex(0),
-                2
+                2,
               ),
               _buildTab(
                 localizations.translate('address'),
                 1,
                 viewModel.selectedTabIndex,
                 () => viewModel.setSelectedTabIndex(1),
-                1
+                1,
               ),
               _buildTab(
                 localizations.translate('kids'),
                 2,
                 viewModel.selectedTabIndex,
                 () => viewModel.setSelectedTabIndex(2),
-                1
+                1,
               ),
             ],
           ),
@@ -382,9 +412,15 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildTab(String title, int index, int selectedIndex, VoidCallback onTap,int expanded) {
+  Widget _buildTab(
+    String title,
+    int index,
+    int selectedIndex,
+    VoidCallback onTap,
+    int expanded,
+  ) {
     final isSelected = index == selectedIndex;
-    
+
     return Expanded(
       flex: expanded,
       child: GestureDetector(
@@ -405,7 +441,10 @@ class _ProfileViewState extends State<ProfileView> {
                 fontFamily: 'Montserrat',
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w600,
-                color: isSelected ?  ColorPalette.primary : ColorPalette.textSecondary,
+                color:
+                    isSelected
+                        ? ColorPalette.primary
+                        : ColorPalette.textSecondary,
               ),
             ),
           ),
@@ -414,7 +453,10 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildTabContent(AppLocalizations localizations, ProfileViewModel viewModel) {
+  Widget _buildTabContent(
+    AppLocalizations localizations,
+    ProfileViewModel viewModel,
+  ) {
     switch (viewModel.selectedTabIndex) {
       case 0:
         return _buildPersonalDetailsForm(localizations);
@@ -434,21 +476,33 @@ class _ProfileViewState extends State<ProfileView> {
         children: [
           _buildTextField(
             controller: _nameController,
-            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icUser,iconColors: ColorPalette.primary,),
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icUser,
+              iconColors: ColorPalette.primary,
+            ),
             labelText: localizations.translate('name'),
             onChanged: (value) => _viewModel.setName(value),
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _spouseNameController,
-            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icSpouse,iconColors: ColorPalette.primary,),
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icSpouse,
+              iconColors: ColorPalette.primary,
+            ),
             labelText: localizations.translate('spouse_name_label'),
             onChanged: (value) => _viewModel.setSpouseName(value),
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _childrenCountController,
-            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icKids,iconColors: ColorPalette.primary,),
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icKids,
+              iconColors: ColorPalette.primary,
+            ),
             labelText: localizations.translate('how_many_children'),
             keyboardType: TextInputType.number,
             onChanged: (value) => _viewModel.setChildrenCount(value),
@@ -458,7 +512,11 @@ class _ProfileViewState extends State<ProfileView> {
           const SizedBox(height: 16),
           _buildTextField(
             controller: _emailController,
-            image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icEmail,iconColors: ColorPalette.iconGray,),
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icEmail,
+              iconColors: ColorPalette.iconGray,
+            ),
             labelText: localizations.translate('email'),
             keyboardType: TextInputType.emailAddress,
             onChanged: (value) => _viewModel.setEmail(value),
@@ -474,38 +532,54 @@ class _ProfileViewState extends State<ProfileView> {
       key: _formKey,
       child: Column(
         children: [
-            _buildTextField(
-              controller: _areaController,
-              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-              labelText: localizations.translate('area'),
-              onChanged: (value) => _viewModel.setArea(value),
+          _buildTextField(
+            controller: _areaController,
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icMap,
+              iconColors: ColorPalette.primary,
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _blockController,
-              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-              labelText: localizations.translate('block'),
-              onChanged: (value) => _viewModel.setBlock(value),
+            labelText: localizations.translate('area'),
+            onChanged: (value) => _viewModel.setArea(value),
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            controller: _blockController,
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icMap,
+              iconColors: ColorPalette.primary,
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _streetController,
-              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icMap,iconColors: ColorPalette.primary,),
-              labelText: localizations.translate('street'),
-              onChanged: (value) => _viewModel.setStreet(value),
+            labelText: localizations.translate('block'),
+            onChanged: (value) => _viewModel.setBlock(value),
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            controller: _streetController,
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icMap,
+              iconColors: ColorPalette.primary,
             ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _houseNumberController,
-              image: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icBottomOne,iconColors: ColorPalette.primary,),
-              labelText: localizations.translate('house_number'),
-              keyboardType: TextInputType.number,
-              onChanged: (value) => _viewModel.setHouseNumber(value),
+            labelText: localizations.translate('street'),
+            onChanged: (value) => _viewModel.setStreet(value),
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            controller: _houseNumberController,
+            image: BaseImage(
+              source: ImageSource.assetIcons,
+              assetPath: ImageUtilsPath.icBottomOne,
+              iconColors: ColorPalette.primary,
             ),
-            const SizedBox(height: 16),
-            _buildGovernorateField(localizations),
-          ],
-        ),
+            labelText: localizations.translate('house_number'),
+            keyboardType: TextInputType.number,
+            onChanged: (value) => _viewModel.setHouseNumber(value),
+          ),
+          const SizedBox(height: 16),
+          _buildGovernorateField(localizations),
+        ],
+      ),
     );
   }
 
@@ -526,9 +600,15 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: _governorateController.text.isEmpty ? null : _governorateController.text,
+              value:
+                  _governorateController.text.isEmpty
+                      ? null
+                      : _governorateController.text,
               hint: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
                 child: Row(
                   children: [
                     BaseImage(
@@ -550,7 +630,11 @@ class _ProfileViewState extends State<ProfileView> {
               ),
               icon: const Padding(
                 padding: EdgeInsets.only(right: 16),
-                child: Icon(Icons.keyboard_arrow_down, color: ColorPalette.textSecondary, size: 20),
+                child: Icon(
+                  Icons.keyboard_arrow_down,
+                  color: ColorPalette.textSecondary,
+                  size: 20,
+                ),
               ),
               isExpanded: true,
               style: const TextStyle(
@@ -558,34 +642,38 @@ class _ProfileViewState extends State<ProfileView> {
                 fontSize: 16,
                 color: ColorPalette.textPrimary,
               ),
-              items: viewModel.governorates.map((name) {
-                return DropdownMenuItem<String>(
-                  value: name,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      children: [
-                        BaseImage(
-                          source: ImageSource.assetIcons,
-                          assetPath: ImageUtilsPath.icBuildings,
-                          iconColors: ColorPalette.primary,
+              items:
+                  viewModel.governorates.map((name) {
+                    return DropdownMenuItem<String>(
+                      value: name,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontSize: 16,
-                              color: ColorPalette.textPrimary,
+                        child: Row(
+                          children: [
+                            BaseImage(
+                              source: ImageSource.assetIcons,
+                              assetPath: ImageUtilsPath.icBuildings,
+                              iconColors: ColorPalette.primary,
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  fontSize: 16,
+                                  color: ColorPalette.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+                      ),
+                    );
+                  }).toList(),
               onChanged: (String? newValue) {
                 if (newValue != null) {
                   _governorateController.text = newValue;
@@ -627,26 +715,38 @@ class _ProfileViewState extends State<ProfileView> {
                       if (success) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(localizations.translate('kids_added_successfully')),
+                            content: Text(
+                              localizations.translate(
+                                'kids_added_successfully',
+                              ),
+                            ),
                             backgroundColor: Colors.green,
                           ),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(viewModel.getTranslatedError(context)),
+                            content: Text(
+                              viewModel.getTranslatedError(context),
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );
                       }
                     }
                   },
-                  icon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icAddSquare,),
+                  icon: BaseImage(
+                    source: ImageSource.assetIcons,
+                    assetPath: ImageUtilsPath.icAddSquare,
+                  ),
                   label: Text(localizations.translate('add_kids')),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ColorPalette.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -655,7 +755,7 @@ class _ProfileViewState extends State<ProfileView> {
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Kids List
             if (viewModel.kids.isEmpty)
               Padding(
@@ -697,7 +797,12 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildKidCard(AppLocalizations localizations, Kid kid, int index, ProfileViewModel viewModel) {
+  Widget _buildKidCard(
+    AppLocalizations localizations,
+    Kid kid,
+    int index,
+    ProfileViewModel viewModel,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -722,7 +827,11 @@ class _ProfileViewState extends State<ProfileView> {
               Expanded(
                 child: Row(
                   children: [
-                    BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icUser,iconColors: ColorPalette.primary,),
+                    BaseImage(
+                      source: ImageSource.assetIcons,
+                      assetPath: ImageUtilsPath.icUser,
+                      iconColors: ColorPalette.primary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -755,77 +864,107 @@ class _ProfileViewState extends State<ProfileView> {
               Row(
                 children: [
                   InkWell(
-                      onTap: () async {
-                        final updatedKid = await KidDetailsBottomSheet.show(
+                    onTap: () async {
+                      final updatedKid = await KidDetailsBottomSheet.show(
+                        context,
+                        existingKid: kid,
+                      );
+                      if (updatedKid != null) {
+                        viewModel.updateKid(index, updatedKid);
+                        // Call API to update only this kid
+                        final success = await viewModel
+                            .updateSingleKidInProfile(context, updatedKid);
+                        if (success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                localizations.translate(
+                                  'kids_updated_successfully',
+                                ),
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                viewModel.getTranslatedError(context),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: BaseImage(
+                      source: ImageSource.assetIcons,
+                      assetPath: ImageUtilsPath.icEdit,
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  InkWell(
+                    onTap: () async {
+                      final confirmed = await ConfirmBottomSheet.show(
+                        context,
+                        title: localizations.translate('confirm'),
+                        message: localizations.translate(
+                          'are_you_sure_delete_kid',
+                        ),
+                        confirmText: localizations.translate('yes'),
+                        cancelText: localizations.translate('cancel'),
+                      );
+                      if (confirmed) {
+                        final success = await viewModel.deleteKidFromProfile(
                           context,
-                          existingKid: kid,
+                          kid.id,
+                          localIndex: index,
                         );
-                        if (updatedKid != null) {
-                          viewModel.updateKid(index, updatedKid);
-                          // Call API to update only this kid
-                          final success = await viewModel.updateSingleKidInProfile(context, updatedKid);
-                          if (success) {
+                        if (success) {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(localizations.translate('kids_updated_successfully')),
+                                content: Text(
+                                  localizations.translate(
+                                    'kid_deleted_successfully',
+                                  ),
+                                ),
                                 backgroundColor: Colors.green,
                               ),
                             );
-                          } else {
+                          }
+                        } else {
+                          if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(viewModel.getTranslatedError(context)),
+                                content: Text(
+                                  viewModel.getTranslatedError(context),
+                                ),
                                 backgroundColor: Colors.red,
                               ),
                             );
                           }
                         }
-                      },
-                      child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icEdit)),
-                  SizedBox(width: 10,),
-                  InkWell(
-                      onTap: () async {
-                        final confirmed = await ConfirmBottomSheet.show(
-                          context,
-                          title: localizations.translate('confirm'),
-                          message: localizations.translate('are_you_sure_delete_kid'),
-                          confirmText: localizations.translate('yes'),
-                          cancelText: localizations.translate('cancel'),
-                        );
-                        if (confirmed) {
-                          final success = await viewModel.deleteKidFromProfile(context, kid.id, localIndex: index);
-                          if (success) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(localizations.translate('kid_deleted_successfully')),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            }
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(viewModel.getTranslatedError(context)),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      },
-                      child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icDelete)),
+                      }
+                    },
+                    child: BaseImage(
+                      source: ImageSource.assetIcons,
+                      assetPath: ImageUtilsPath.icDelete,
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Gender
           Row(
             children: [
-             BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icGender,),
+              BaseImage(
+                source: ImageSource.assetIcons,
+                assetPath: ImageUtilsPath.icGender,
+              ),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,11 +990,14 @@ class _ProfileViewState extends State<ProfileView> {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Age
           Row(
             children: [
-              BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icKids,),
+              BaseImage(
+                source: ImageSource.assetIcons,
+                assetPath: ImageUtilsPath.icKids,
+              ),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -890,7 +1032,12 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, AppLocalizations localizations, int index, ProfileViewModel viewModel) {
+  void _showDeleteConfirmation(
+    BuildContext context,
+    AppLocalizations localizations,
+    int index,
+    ProfileViewModel viewModel,
+  ) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -908,7 +1055,9 @@ class _ProfileViewState extends State<ProfileView> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(localizations.translate('kid_deleted_successfully')),
+                    content: Text(
+                      localizations.translate('kid_deleted_successfully'),
+                    ),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -959,7 +1108,10 @@ class _ProfileViewState extends State<ProfileView> {
           prefixIcon: image,
           filled: true,
           fillColor: readOnly ? Colors.grey[300] : Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -998,7 +1150,11 @@ class _ProfileViewState extends State<ProfileView> {
         ),
         decoration: InputDecoration(
           labelText: localizations.translate('phone_number'),
-          prefixIcon: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icPhoneGray,iconColors: ColorPalette.primary,),
+          prefixIcon: BaseImage(
+            source: ImageSource.assetIcons,
+            assetPath: ImageUtilsPath.icPhoneGray,
+            iconColors: ColorPalette.primary,
+          ),
           suffixIcon: TextButton(
             onPressed: () {
               // TODO: Implement change phone number
@@ -1018,7 +1174,10 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -1033,18 +1192,111 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  Widget _buildUpdateButton(AppLocalizations localizations) {
+  Widget _buildActionButtons(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
-        return SizedBox(
-          width: double.infinity,
-          child: PrimaryButton(
-            label: localizations.translate('update'),
-            onClick: viewModel.isLoading ? null : _handleUpdate,
-            isLoading: viewModel.isLoading,
+        return Row(
+          children: [
+            // Cancel Button
+
+
+            // Update Button
+            Expanded(
+              child: PrimaryButton(
+                label: localizations.translate('update'),
+                onClick: viewModel.isLoading ? null : _handleUpdate,
+                isLoading: viewModel.isLoading,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildCancelButton(localizations),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildCancelButton(AppLocalizations localizations) {
+    return Consumer<ProfileViewModel>(
+      builder: (context, viewModel, child) {
+        return Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: viewModel.isLoading ? null : _handleCancel,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: ColorPalette.primary.withOpacity(0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  localizations.translate('cancel'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    color: ColorPalette.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
           ),
         );
       },
+    );
+  }
+
+  void _handleCancel() {
+    // Restore original values to controllers
+    _nameController.text = _originalName;
+    _spouseNameController.text = _originalSpouseName;
+    _childrenCountController.text = _originalChildrenCount;
+    _phoneController.text = _originalPhoneNumber;
+    _emailController.text = _originalEmail;
+    _areaController.text = _originalArea;
+    _blockController.text = _originalBlock;
+    _streetController.text = _originalStreet;
+    _houseNumberController.text = _originalHouseNumber;
+    _governorateController.text = _originalGovernorate;
+
+    // Restore original values to view model
+    _viewModel.setName(_originalName);
+    _viewModel.setSpouseName(_originalSpouseName);
+    _viewModel.setChildrenCount(_originalChildrenCount);
+    _viewModel.setPhoneNumber(_originalPhoneNumber);
+    _viewModel.setEmail(_originalEmail);
+    _viewModel.setArea(_originalArea);
+    _viewModel.setBlock(_originalBlock);
+    _viewModel.setStreet(_originalStreet);
+    _viewModel.setHouseNumber(_originalHouseNumber);
+    _viewModel.setGovernorate(_originalGovernorate);
+
+    // Restore original profile image
+    _viewModel.setProfileImage(_originalProfileImage, _originalProfileImagePath);
+
+    // Clear any errors
+    _viewModel.clearError();
+
+    // Show confirmation message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).translate('changes_discarded'),
+        ),
+        backgroundColor: Colors.orange,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -1052,10 +1304,26 @@ class _ProfileViewState extends State<ProfileView> {
     if (_formKey.currentState!.validate()) {
       await _viewModel.updateProfile(context);
       if (_viewModel.isSuccess) {
+        // Update original values after successful update
+        _originalName = _viewModel.name;
+        _originalSpouseName = _viewModel.spouseName;
+        _originalChildrenCount = _viewModel.childrenCount;
+        _originalPhoneNumber = _viewModel.phoneNumber;
+        _originalEmail = _viewModel.email;
+        _originalArea = _viewModel.area;
+        _originalBlock = _viewModel.block;
+        _originalStreet = _viewModel.street;
+        _originalHouseNumber = _viewModel.houseNumber;
+        _originalGovernorate = _viewModel.governorate;
+        _originalProfileImagePath = _viewModel.profileImagePath;
+        _originalProfileImage = _viewModel.profileImage;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context).translate('profile_updated_successfully')
+              AppLocalizations.of(
+                context,
+              ).translate('profile_updated_successfully'),
             ),
             backgroundColor: Colors.green,
           ),
@@ -1073,4 +1341,3 @@ class _ProfileViewState extends State<ProfileView> {
     }
   }
 }
-

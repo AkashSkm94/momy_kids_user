@@ -67,6 +67,7 @@ class UrlManager {
   static const String addKids = '/profile/customer/child';
   static const String updateKids = '/profile/customer/child/update';
   static const String deleteKid = '/profile/customer/child/{childId}';
+  static const String deleteProfilePhoto = '/profile/photo/delete/{id}';
   static const String governorates = '/governorates/getAll?lang=';
 }
 

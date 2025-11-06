@@ -1,5 +1,5 @@
 {
-  "app_name": "Momy Kids",
+  "app_name": "MomyKids",
   "welcome": "Welcome to MomyKidz!",
   "welcome_subtitle": "Your family’s trusted app for services, care, and fun.",
   "welcome_subtitle2": "Create your profile and explore what’s best for you and your little ones.",
@@ -16,6 +16,7 @@
   "error": "Error",
   "retry": "Retry",
   "cancel": "Cancel",
+  "changes_discarded": "Changes discarded",
   "ok": "OK",
   "yes": "Yes",
   "no": "No",
@@ -179,6 +180,8 @@
   "select_image_source": "Select Image Source",
   "camera": "Camera",
   "gallery": "Gallery",
+  "change_picture": "Change Picture",
+  "delete_picture": "Delete Picture",
   "cancel": "Cancel",
   "profile_updated_successfully": "Profile updated successfully",
   "profile_update_failed": "Failed to update profile",

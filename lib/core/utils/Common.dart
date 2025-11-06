@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../components/image_widgets.dart';
-import '../components/language_dialog.dart';
 import '../constants/color_palette.dart';
 import '../constants/images_utils.dart';
 import '../localization/appLanguage.dart';
-import '../localization/appLocalization.dart';
 
 class Common{
 
@@ -16,7 +14,7 @@ class Common{
        child: Container(
          decoration: BoxDecoration(
            color:  appLanguage.appLocal.languageCode == 'ar' ? ColorPalette.colorGreen : ColorPalette.primary,
-           borderRadius: BorderRadius.circular(5),
+           borderRadius: BorderRadius.circular(10),
          ),
          child: Material(
            color: Colors.transparent,
@@ -24,7 +22,15 @@ class Common{
              borderRadius: BorderRadius.circular(20),
              onTap: () async {
                FocusScope.of(context).unfocus();
-               final languageChanged = await showLanguageDialog(context);
+               // Toggle between English and Arabic
+               final currentLanguage = appLanguage.appLocal.languageCode;
+               if (currentLanguage == 'en') {
+                 // Change to Arabic
+                 await appLanguage.changeLanguage(const Locale('ar'));
+               } else {
+                 // Change to English
+                 await appLanguage.changeLanguage(const Locale('en'));
+               }
                onLanguageChange();
              },
              child: Padding(
@@ -42,7 +48,7 @@ class Common{
                      style: const TextStyle(
                        fontFamily: 'Montserrat',
                        fontSize: 14,
-                       fontWeight: FontWeight.w600,
+                       fontWeight: FontWeight.w700,
                        color: Colors.white,
                      ),
                    ),

@@ -450,7 +450,6 @@ class ProfileViewModel extends ChangeNotifier {
     } finally {
       setLoading(false);
     }
-    await fetchGovernorates(context);
   }
 
   // Update profile
@@ -593,6 +592,58 @@ class ProfileViewModel extends ChangeNotifier {
         localizations.translate('profile_update_failed'),
         errorKey: 'profile_update_failed',
       );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Delete profile image
+  Future<bool> deleteProfileImage(BuildContext context) async {
+    final localizations = AppLocalizations.of(context);
+    setLoading(true);
+    clearError();
+
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      final userId = storage.getString(LocalStorageManager.keyUserId);
+      
+      if (userId == null || userId.isEmpty) {
+        setError(
+          localizations.translate('user_id_not_found'),
+          errorKey: 'user_id_not_found',
+        );
+        setLoading(false);
+        return false;
+      }
+
+      // Replace {id} in the endpoint with actual userId
+      final endpoint = UrlManager.deleteProfilePhoto.replaceAll('{id}', userId);
+      
+      // Call delete API
+      final response = await ApiUtils.delete(endpoint: endpoint);
+
+      if (response.isSuccess) {
+        // Clear local profile image
+        _profileImage = null;
+        _profileImagePath = null;
+        setSuccess(true);
+        notifyListeners();
+        return true;
+      } else {
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty
+            ? localizations.translate(response.message)
+            : localizations.translate('PROFILE_COULD_NOT_DELETE_PHOTO');
+        setError(errorMsg, errorKey: response.message);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('PROFILE_COULD_NOT_DELETE_PHOTO'),
+        errorKey: 'PROFILE_COULD_NOT_DELETE_PHOTO',
+      );
+      print('Error deleting profile image: $e');
+      return false;
     } finally {
       setLoading(false);
     }
