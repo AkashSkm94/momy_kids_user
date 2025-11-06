@@ -80,7 +80,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
                           _viewModel.clearError();
                           _viewModel.setNewPassword('');
                           _viewModel.setConfirmPassword('');
-
+                          _newPasswordController.text = '';
+                          _confirmPasswordController.text = '';
                           // Force rebuild to update keyboard language
                           setState(() {});
                         }

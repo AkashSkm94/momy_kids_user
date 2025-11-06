@@ -35,7 +35,7 @@ class _KidDetailsContent extends StatefulWidget {
 class _KidDetailsContentState extends State<_KidDetailsContent> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  String _selectedGender = 'Male';
+  String? _selectedGender; // Optional - can be null
   DateTime? _selectedDate;
 
   @override
@@ -43,7 +43,9 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
     super.initState();
     if (widget.existingKid != null) {
       _nameController.text = widget.existingKid!.name;
-      _selectedGender = widget.existingKid!.gender;
+      _selectedGender = widget.existingKid!.gender.isNotEmpty 
+          ? widget.existingKid!.gender 
+          : null;
       _selectedDate = widget.existingKid!.dateOfBirth;
     }
   }
@@ -227,11 +229,15 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
             ),
           ),
           child: Text(
-            localizations.translate(_selectedGender.toLowerCase()),
-            style: const TextStyle(
+            _selectedGender != null
+                ? localizations.translate(_selectedGender!.toLowerCase())
+                : localizations.translate('select_gender'),
+            style: TextStyle(
               fontFamily: 'Montserrat',
               fontSize: 16,
-              color: ColorPalette.textPrimary,
+              color: _selectedGender != null
+                  ? ColorPalette.textPrimary
+                  : ColorPalette.textSecondary.withOpacity(0.5),
             ),
           ),
         ),
@@ -327,6 +333,15 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
                   Navigator.pop(context);
                 },
               ),
+              ListTile(
+                title: Text(
+                  localizations.translate('cancel'),
+                  style: TextStyle(color: ColorPalette.textSecondary),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
             ],
           ),
         );
@@ -360,24 +375,13 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
   }
 
   void _handleSaveKid() {
+    // Only validate name field - other fields are optional
     if (_formKey.currentState!.validate()) {
-      if (_selectedDate == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context).translate('dob_required'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       final kid = Kid(
         id: widget.existingKid?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
-        gender: _selectedGender,
-        dateOfBirth: _selectedDate!,
+        name: _nameController.text.trim(),
+        gender: _selectedGender ?? '', // Optional - use empty string if not selected
+        dateOfBirth: _selectedDate, // Optional - can be null
       );
 
       Navigator.pop(context, kid);

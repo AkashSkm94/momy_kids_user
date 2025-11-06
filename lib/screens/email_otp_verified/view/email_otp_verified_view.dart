@@ -292,7 +292,7 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
   }
 
   void _handleSubmitOtp() async {
-    await _viewModel.submitOtp(context);
+    await _viewModel.submitOtp(context,widget.from);
     
     if (mounted) {
       if (_viewModel.isSuccess) {

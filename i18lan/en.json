@@ -30,6 +30,7 @@
   "settings": "Settings",
   "profile": "Profile",
   "logout": "Logout",
+  "logout_confirmation_message": "Are you sure you want to logout?",
   "login": "Login",
   "register": "Register",
   "forgot_password": "Forgot Password?",
@@ -142,6 +143,7 @@
   "password_reset_successful": "Password reset successful!",
   "phone_verified": "Phone Number verified successfully.",
   "phone_verified_message": "Your phone number has been verified successfully.",
+  "phone_number_updated_successfully": "Phone number updated successfully",
   "email_verified": "Email verified successfully.",
   "email_verified_message": "Your email has been verified successfully.",
   "verify_email": "Verify Email",
@@ -333,6 +335,7 @@
   "OTP_EXPIRED": "OTP expired, please resend",
   "USER_NOT_FOUND": "The email ID entered is not registered.",
   "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email.",
-  "INVALID_PASSWORD": "Invalid Password"
+  "INVALID_PASSWORD": "Invalid Password",
+  "INVALID_OR_USED_OTP": "The OTP you entered is invalid or has already been used. Please request a new one."
 
 }

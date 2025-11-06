@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:momy_kids/core/routes/app_routes.dart';
 import '../../../core/network/apiutils.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/localization/appLocalization.dart';
@@ -140,7 +141,7 @@ class EmailOtpVerifiedViewModel extends ChangeNotifier {
   }
 
   // Submit OTP
-  Future<void> submitOtp(BuildContext context) async {
+  Future<void> submitOtp(BuildContext context,String from) async {
     final localizations = AppLocalizations.of(context);
     
     if (!validateOtp()) {
@@ -165,9 +166,10 @@ class EmailOtpVerifiedViewModel extends ChangeNotifier {
     try {
       // Make API call to verify Email OTP
       final response = await ApiUtils.post(
-        endpoint: UrlManager.emailOtpVerify,
+        endpoint: AppRoutes.forgotPassword == from ? UrlManager.forgotOtpVerify : UrlManager.emailOtpVerify,
         body: {
           'contact': _email,
+          'email': _email,
           'otpCode': otpCode,
         },
       );

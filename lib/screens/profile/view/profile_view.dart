@@ -14,6 +14,7 @@ import '../../../core/components/image_picker_bottom_sheet.dart';
 import '../../../core/components/delete_image_bottom_sheet.dart';
 import '../../../core/network/url_manager.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/storage/local_storage_manager.dart';
 import '../../../core/utils/Common.dart';
 import '../view_model/profile_view_model.dart';
 import '../widgets/kid_details_bottom_sheet.dart';
@@ -246,6 +247,12 @@ class _ProfileViewState extends State<ProfileView> {
                 // Update and Cancel Buttons (hidden on Kids tab)
                 if (viewModel.selectedTabIndex != 2)
                   _buildActionButtons(localizations),
+
+                const SizedBox(height: 24),
+
+                // Logout Button
+                if (viewModel.selectedTabIndex != 2)
+                _buildLogoutButton(localizations),
 
                 const SizedBox(height: 20),
               ],
@@ -1415,6 +1422,75 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           );
         }
+      }
+    }
+  }
+
+  Widget _buildLogoutButton(AppLocalizations localizations) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _handleLogout,
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.red, width: 1.5),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: const Icon(
+          Icons.logout,
+          color: Colors.red,
+          size: 20,
+        ),
+        label: Text(
+          localizations.translate('logout'),
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.red,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleLogout() async {
+    // Store context-dependent references before async operations
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final localizations = AppLocalizations.of(context);
+    
+    // Show confirmation dialog
+    final confirmed = await ConfirmBottomSheet.show(
+      context,
+      title: localizations.translate('logout'),
+      message: localizations.translate('logout_confirmation_message'),
+      confirmText: localizations.translate('logout'),
+      cancelText: localizations.translate('cancel'),
+    );
+
+    if (!mounted) return;
+
+    if (confirmed) {
+      // Clear user data from local storage
+      final storage = await LocalStorageManager.getInstance();
+      await storage.logout();
+
+      // Navigate to login screen
+      if (mounted) {
+        NavigationService.navigateToLogin();
+        
+        // Show success message using stored reference
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              localizations.translate('logout_successful'),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     }
   }
