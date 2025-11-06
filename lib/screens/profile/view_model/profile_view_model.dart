@@ -531,6 +531,8 @@ class ProfileViewModel extends ChangeNotifier {
       final fields = <String, String>{
         'name': _name,
         'preferredLanguage':localizations.locale!.languageCode,
+        'spouseName':_spouseName,
+        'kidsCount':_childrenCount
       };
 
       // Add customer profile fields
@@ -562,6 +564,8 @@ class ProfileViewModel extends ChangeNotifier {
       if (_governorate.isNotEmpty) {
         fields['governorate'] = _governorate;
       }
+
+
 
       // Call PUT API with multipart form data
       final response = await ApiUtils.putMultipart(
