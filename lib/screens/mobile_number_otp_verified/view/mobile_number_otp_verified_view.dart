@@ -64,7 +64,7 @@ class _MobileNumberOtpVerifiedViewState extends State<MobileNumberOtpVerifiedVie
             children: [
               // Top section with language button
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: const EdgeInsets.only(right: 16.0,left: 16.0,top: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -298,11 +298,6 @@ class _MobileNumberOtpVerifiedViewState extends State<MobileNumberOtpVerifiedVie
         );
       } else if (_viewModel.errorMessage.isNotEmpty) {
         // Show error snackbar
-        OtpSuccessBottomSheet.show(
-          context,
-          phoneNumber: _viewModel.phoneNumber,
-
-        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_viewModel.getTranslatedError(context)),

@@ -19,7 +19,7 @@ class Common{
          child: Material(
            color: Colors.transparent,
            child: InkWell(
-             borderRadius: BorderRadius.circular(20),
+             borderRadius: BorderRadius.circular(10),
              onTap: () async {
                FocusScope.of(context).unfocus();
                // Toggle between English and Arabic

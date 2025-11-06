@@ -164,7 +164,7 @@ class _ProfileViewState extends State<ProfileView> {
       actions: [
         // Language Button
         Padding(
-          padding: const EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 16.0,left: 16.0),
           child: Common.languageIcons(
             context: context,
             appLanguage: appLanguage,
