@@ -305,37 +305,55 @@ class _ProfileViewState extends State<ProfileView> {
               right: 0,
               child: GestureDetector(
                 onTap: () async {
+                  // Store context-dependent references before async operations
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  final localizations = AppLocalizations.of(context);
+                  
                   // Show delete image bottom sheet first
                   final imageAction = await DeleteImageBottomSheet.show(context);
+                  
+                  // Check if widget is still mounted before proceeding
+                  if (!mounted) return;
                   
                   if (imageAction == ImageAction.changePicture) {
                     // Show image picker bottom sheet
                     final pickedFile = await ImagePickerBottomSheet.show(context);
+                    if (!mounted) return;
                     if (pickedFile != null) {
                       await viewModel.pickImage(context, pickedFile);
                     }
                   } else if (imageAction == ImageAction.deletePicture) {
                     // Delete the profile image via API
                     final success = await viewModel.deleteProfileImage(context);
+                    if (!mounted) return;
+                    
                     if (success) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppLocalizations.of(context).translate(
-                                'PROFILE_PHOTO_DELETED_SUCCESSFULLY',
-                              ),
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            localizations.translate(
+                              'PROFILE_PHOTO_DELETED_SUCCESSFULLY',
                             ),
-                            backgroundColor: Colors.green,
-                            duration: const Duration(seconds: 2),
                           ),
-                        );
-                      }
+                          backgroundColor: Colors.green,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
                     } else {
-                      if (mounted && viewModel.errorMessage.isNotEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      if (viewModel.errorMessage.isNotEmpty && mounted) {
+                        // Translate error message using stored localizations
+                        String errorMessage = viewModel.errorMessage;
+                        if (viewModel.errorKey.isNotEmpty) {
+                          errorMessage = localizations.translate(viewModel.errorKey);
+                          // Replace parameters in the error message
+                          viewModel.errorParams.forEach((key, value) {
+                            errorMessage = errorMessage.replaceAll('{$key}', value);
+                          });
+                        }
+                        
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text(viewModel.getTranslatedError(context)),
+                            content: Text(errorMessage),
                             backgroundColor: Colors.red,
                             duration: const Duration(seconds: 3),
                           ),
@@ -707,16 +725,24 @@ class _ProfileViewState extends State<ProfileView> {
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
+                    // Store context-dependent references before async operations
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+                    final currentLocalizations = localizations;
+                    
                     final kid = await KidDetailsBottomSheet.show(context);
+                    if (!this.mounted) return;
+                    
                     if (kid != null) {
                       viewModel.addKid(kid);
                       // Call API to add kids
                       final success = await viewModel.addKidsToProfile(context);
+                      if (!this.mounted) return;
+                      
                       if (success) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(
-                              localizations.translate(
+                              currentLocalizations.translate(
                                 'kids_added_successfully',
                               ),
                             ),
@@ -724,11 +750,19 @@ class _ProfileViewState extends State<ProfileView> {
                           ),
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        // Translate error message using stored localizations
+                        String errorMessage = viewModel.errorMessage;
+                        if (viewModel.errorKey.isNotEmpty) {
+                          errorMessage = currentLocalizations.translate(viewModel.errorKey);
+                          // Replace parameters in the error message
+                          viewModel.errorParams.forEach((key, value) {
+                            errorMessage = errorMessage.replaceAll('{$key}', value);
+                          });
+                        }
+                        
+                        scaffoldMessenger.showSnackBar(
                           SnackBar(
-                            content: Text(
-                              viewModel.getTranslatedError(context),
-                            ),
+                            content: Text(errorMessage),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -865,20 +899,28 @@ class _ProfileViewState extends State<ProfileView> {
                 children: [
                   InkWell(
                     onTap: () async {
+                      // Store context-dependent references before async operations
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      final currentLocalizations = localizations;
+                      
                       final updatedKid = await KidDetailsBottomSheet.show(
                         context,
                         existingKid: kid,
                       );
+                      if (!this.mounted) return;
+                      
                       if (updatedKid != null) {
                         viewModel.updateKid(index, updatedKid);
                         // Call API to update only this kid
                         final success = await viewModel
                             .updateSingleKidInProfile(context, updatedKid);
+                        if (!this.mounted) return;
+                        
                         if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          scaffoldMessenger.showSnackBar(
                             SnackBar(
                               content: Text(
-                                localizations.translate(
+                                currentLocalizations.translate(
                                   'kids_updated_successfully',
                                 ),
                               ),
@@ -886,11 +928,19 @@ class _ProfileViewState extends State<ProfileView> {
                             ),
                           );
                         } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          // Translate error message using stored localizations
+                          String errorMessage = viewModel.errorMessage;
+                          if (viewModel.errorKey.isNotEmpty) {
+                            errorMessage = currentLocalizations.translate(viewModel.errorKey);
+                            // Replace parameters in the error message
+                            viewModel.errorParams.forEach((key, value) {
+                              errorMessage = errorMessage.replaceAll('{$key}', value);
+                            });
+                          }
+                          
+                          scaffoldMessenger.showSnackBar(
                             SnackBar(
-                              content: Text(
-                                viewModel.getTranslatedError(context),
-                              ),
+                              content: Text(errorMessage),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -905,45 +955,57 @@ class _ProfileViewState extends State<ProfileView> {
                   SizedBox(width: 10),
                   InkWell(
                     onTap: () async {
+                      // Store context-dependent references before async operations
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      final currentLocalizations = localizations;
+                      
                       final confirmed = await ConfirmBottomSheet.show(
                         context,
-                        title: localizations.translate('confirm'),
-                        message: localizations.translate(
+                        title: currentLocalizations.translate('confirm'),
+                        message: currentLocalizations.translate(
                           'are_you_sure_delete_kid',
                         ),
-                        confirmText: localizations.translate('yes'),
-                        cancelText: localizations.translate('cancel'),
+                        confirmText: currentLocalizations.translate('yes'),
+                        cancelText: currentLocalizations.translate('cancel'),
                       );
+                      if (!this.mounted) return;
+                      
                       if (confirmed) {
                         final success = await viewModel.deleteKidFromProfile(
                           context,
                           kid.id,
                           localIndex: index,
                         );
+                        if (!this.mounted) return;
+                        
                         if (success) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  localizations.translate(
-                                    'kid_deleted_successfully',
-                                  ),
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                currentLocalizations.translate(
+                                  'kid_deleted_successfully',
                                 ),
-                                backgroundColor: Colors.green,
                               ),
-                            );
-                          }
+                              backgroundColor: Colors.green,
+                            ),
+                          );
                         } else {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  viewModel.getTranslatedError(context),
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                          // Translate error message using stored localizations
+                          String errorMessage = viewModel.errorMessage;
+                          if (viewModel.errorKey.isNotEmpty) {
+                            errorMessage = currentLocalizations.translate(viewModel.errorKey);
+                            // Replace parameters in the error message
+                            viewModel.errorParams.forEach((key, value) {
+                              errorMessage = errorMessage.replaceAll('{$key}', value);
+                            });
                           }
+                          
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text(errorMessage),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
                       }
                     },
@@ -1302,7 +1364,15 @@ class _ProfileViewState extends State<ProfileView> {
 
   void _handleUpdate() async {
     if (_formKey.currentState!.validate()) {
+      // Store context-dependent references before async operations
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final localizations = AppLocalizations.of(context);
+      
       await _viewModel.updateProfile(context);
+      
+      // Check if widget is still mounted before showing snackbars
+      if (!mounted) return;
+      
       if (_viewModel.isSuccess) {
         // Update original values after successful update
         _originalName = _viewModel.name;
@@ -1318,21 +1388,29 @@ class _ProfileViewState extends State<ProfileView> {
         _originalProfileImagePath = _viewModel.profileImagePath;
         _originalProfileImage = _viewModel.profileImage;
         
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(
-                context,
-              ).translate('profile_updated_successfully'),
+              localizations.translate('profile_updated_successfully'),
             ),
             backgroundColor: Colors.green,
           ),
         );
       } else {
-        if (_viewModel.errorMessage.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        if (_viewModel.errorMessage.isNotEmpty && mounted) {
+          // Translate error message using stored localizations
+          String errorMessage = _viewModel.errorMessage;
+          if (_viewModel.errorKey.isNotEmpty) {
+            errorMessage = localizations.translate(_viewModel.errorKey);
+            // Replace parameters in the error message
+            _viewModel.errorParams.forEach((key, value) {
+              errorMessage = errorMessage.replaceAll('{$key}', value);
+            });
+          }
+          
+          scaffoldMessenger.showSnackBar(
             SnackBar(
-              content: Text(_viewModel.getTranslatedError(context)),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
             ),
           );
