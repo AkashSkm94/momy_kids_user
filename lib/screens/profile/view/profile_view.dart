@@ -631,8 +631,9 @@ class _ProfileViewState extends State<ProfileView> {
                 alignment: Alignment.bottomLeft,
                 children: [
                   Positioned(
-                    top:6,
-                    left: 50,
+                    top: 6,
+                    left: localizations.locale?.countryCode == 'en' ? 0 : 50,
+                    right: localizations.locale?.countryCode != 'en' ? 50 : 0,
                     child: Text(
                       localizations.translate('governorate'),
                       style: const TextStyle(
@@ -646,9 +647,9 @@ class _ProfileViewState extends State<ProfileView> {
                   DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
-                      value: _governorateController.text.isEmpty
-                          ? null
-                          : _governorateController.text,
+                      value: viewModel.governorates.contains(_governorateController.text)
+                          ? _governorateController.text
+                          : null,
                       icon: const Padding(
                         padding: EdgeInsets.only(right: 12),
                         child: Icon(
@@ -1484,7 +1485,7 @@ class _ProfileViewState extends State<ProfileView> {
                                 fontSize: 14,
                               ),
                               filled: true,
-                              fillColor: !_isPhoneEditing ? Colors.grey[100] : Colors.white,
+                              fillColor: Colors.white,
                               suffixIcon: TextButton(
                                 onPressed: _isPhoneEditing
                                     ? () => _handleVerifyPhone(localizations, viewModel)
