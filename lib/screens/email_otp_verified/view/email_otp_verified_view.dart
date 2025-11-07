@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:pinput/pinput.dart';
 import '../../../core/constants/images_utils.dart';
 import '../../../core/constants/color_palette.dart';
 import '../../../core/localization/appLanguage.dart';
@@ -25,8 +26,8 @@ class EmailOtpVerifiedView extends StatefulWidget {
 }
 
 class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
-  final List<TextEditingController> _otpControllers = List.generate(6, (index) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
+  final TextEditingController _otpController = TextEditingController();
+  final FocusNode _otpFocusNode = FocusNode();
   late EmailOtpVerifiedViewModel _viewModel;
 
   @override
@@ -36,19 +37,13 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
     _viewModel.startResendCountdown();
     
     // Set email from widget
-    if (widget.email != null) {
-      _viewModel.setEmail(widget.email!);
-    }
+    _viewModel.setEmail(widget.email);
   }
 
   @override
   void dispose() {
-    for (var controller in _otpControllers) {
-      controller.dispose();
-    }
-    for (var focusNode in _focusNodes) {
-      focusNode.dispose();
-    }
+    _otpController.dispose();
+    _otpFocusNode.dispose();
     super.dispose();
   }
 
@@ -174,91 +169,76 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
   }
 
   Widget _buildOtpInputFields() {
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(6, (index) {
-          return Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: ColorPalette.primary.withOpacity(0.3),
-                width: 1,
-              ),
-              color: Colors.white,
-            ),
-            child: Directionality(
-              textDirection: TextDirection.ltr, // Force LTR context
-              child: TextFormField(
-                controller: _otpControllers[index],
-                focusNode: _focusNodes[index],
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                textDirection: TextDirection.ltr, // Force LTR for OTP input
-                maxLength: 1,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                style: const TextStyle(
-                  fontFamily: 'Montserrat',
-                  fontSize: 24,
-                  color: ColorPalette.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  counterText: '',
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-
-                ),
-                onChanged: (value) {
-                  // Ensure value is always LTR
-                  final ltrValue = value.trim();
-                  _viewModel.setOtpDigit(index, ltrValue);
-                  if (ltrValue.isNotEmpty) {
-                    if (index < 5) {
-                      _focusNodes[index + 1].requestFocus();
-                    } else {
-                      _focusNodes[index].unfocus();
-                    }
-                  } else if (ltrValue.isEmpty && index > 0) {
-                    _focusNodes[index - 1].requestFocus();
-                  }
-                },
-                onTap: () {
-                  // Find the first empty field from left to right
-                  int firstEmptyIndex = _getFirstEmptyIndex();
-                  
-                  // If user taps on a field that's not the first empty, move focus to first empty
-                  if (index != firstEmptyIndex) {
-                    _focusNodes[firstEmptyIndex].requestFocus();
-                  } else {
-                    // If tapping on the first empty field, select the text
-                    _otpControllers[index].selection = TextSelection.fromPosition(
-                      TextPosition(offset: _otpControllers[index].text.length),
-                    );
-                  }
-                },
-              ),
-            ),
-          );
-        }),
+    final defaultPinTheme = PinTheme(
+      width: 50,
+      height: 50,
+      textStyle: const TextStyle(
+        fontFamily: 'Montserrat',
+        fontSize: 24,
+        color: ColorPalette.textPrimary,
+        fontWeight: FontWeight.bold,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: ColorPalette.primary.withOpacity(0.3),
+          width: 1,
+        ),
       ),
     );
-  }
 
-  // Helper method to find the first empty OTP field from left to right
-  int _getFirstEmptyIndex() {
-    for (int i = 0; i < 6; i++) {
-      if (_otpControllers[i].text.isEmpty) {
-        return i;
-      }
-    }
-    // If all fields are filled, return the last index
-    return 5;
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(
+          color: ColorPalette.primary,
+          width: 2,
+        ),
+      ),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(
+          color: ColorPalette.primary,
+          width: 1,
+        ),
+      ),
+    );
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Pinput(
+        length: 6,
+        controller: _otpController,
+        focusNode: _otpFocusNode,
+        defaultPinTheme: defaultPinTheme,
+        focusedPinTheme: focusedPinTheme,
+        submittedPinTheme: submittedPinTheme,
+        pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+        showCursor: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+        ],
+        onCompleted: (pin) {
+          // Update view model with complete OTP
+          for (int i = 0; i < pin.length && i < 6; i++) {
+            _viewModel.setOtpDigit(i, pin[i]);
+          }
+        },
+        onChanged: (value) {
+          // Update view model as user types
+          for (int i = 0; i < value.length && i < 6; i++) {
+            _viewModel.setOtpDigit(i, value[i]);
+          }
+          // Clear remaining digits if user deletes
+          for (int i = value.length; i < 6; i++) {
+            _viewModel.setOtpDigit(i, '');
+          }
+        },
+      ),
+    );
   }
 
   Widget _buildResendOtp(AppLocalizations localizations) {
@@ -330,13 +310,16 @@ class _EmailOtpVerifiedViewState extends State<EmailOtpVerifiedView> {
           ),
         );
       } else {
-        // Clear all OTP controller fields
-        for (var controller in _otpControllers) {
-          controller.clear();
+        // Clear OTP controller
+        _otpController.clear();
+        
+        // Clear view model OTP digits
+        for (int i = 0; i < 6; i++) {
+          _viewModel.setOtpDigit(i, '');
         }
         
-        // Focus on first field
-        _focusNodes[0].requestFocus();
+        // Focus on OTP input
+        _otpFocusNode.requestFocus();
         
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
