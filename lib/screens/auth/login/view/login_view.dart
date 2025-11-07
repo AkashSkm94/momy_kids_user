@@ -243,7 +243,7 @@ class _LoginViewState extends State<LoginView> {
     if (_formKey.currentState!.validate()) {
       await _viewModel.login(context);
       if (_viewModel.isSuccess) {
-        NavigationService.navigateAndClearStack(AppRoutes.profile);
+        NavigationService.navigateAndClearStack(AppRoutes.products);
       } else {
         if (_viewModel.errorMessage.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(

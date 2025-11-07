@@ -29,6 +29,8 @@
   "sort": "ترتيب",
   "settings": "الإعدادات",
   "profile": "الملف الشخصي",
+  "account": "الحساب",
+  "language": "اللغة",
   "logout": "تسجيل الخروج",
   "logout_confirmation_message": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
   "login": "تسجيل الدخول",

@@ -100,7 +100,7 @@ class SessionManager {
   /// Navigate to home screen
   void _navigateToHome() {
     if (NavigationService.currentContext != null) {
-      NavigationService.navigateAndClearStack(AppRoutes.profile);
+      NavigationService.navigateAndClearStack(AppRoutes.products);
     }
   }
 
@@ -147,6 +147,7 @@ class SessionManager {
     }
   }
 }
+
 
 
 

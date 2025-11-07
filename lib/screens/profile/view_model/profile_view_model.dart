@@ -135,14 +135,15 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchGovernorates(BuildContext context) async {
+  Future<void> fetchGovernorates(BuildContext context,bool isFirstTime) async {
     try {
       final localizations = AppLocalizations.of(context);
 
       String language = localizations.locale!.languageCode! == "en" ? "Ar" : "En";
-      // if(language.isNotEmpty){
-      //   language = language[0].toUpperCase() + language.substring(1);
-      // }
+      if(isFirstTime){
+        language = localizations.locale!.languageCode!;
+        language = language[0].toUpperCase() + language.substring(1);
+      }
       final response = await ApiUtils.get(
         endpoint: '${UrlManager.governorates}$language',
       );
@@ -395,7 +396,7 @@ class ProfileViewModel extends ChangeNotifier {
     if (_errorKey.isNotEmpty) {
       notifyListeners();
     }
-    fetchGovernorates(context);
+    fetchGovernorates(context,false);
   }
 
   // Load profile data from local storage or API

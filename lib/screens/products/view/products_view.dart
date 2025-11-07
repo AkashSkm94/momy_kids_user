@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:momy_kids/core/components/app_background.dart';
 import 'package:provider/provider.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
 import '../../../core/constants/color_palette.dart';
@@ -74,18 +75,20 @@ class _ProductsViewState extends State<ProductsView> {
 
     return ChangeNotifierProvider<ProductsViewModel>(
       create: (context) => _viewModel,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F9FF),
-        appBar: _buildAppBar(appLanguage, localizations),
-        body: _buildBody(localizations),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _currentBottomNavIndex,
-          onTap: (index) {
-            setState(() {
-              _currentBottomNavIndex = index;
-            });
-            _handleNavigation(index);
-          },
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF5F9FF),
+          appBar: _buildAppBar(appLanguage, localizations),
+          body: _buildBody(localizations),
+          bottomNavigationBar: CustomBottomNavigationBar(
+            currentIndex: _currentBottomNavIndex,
+            onTap: (index) {
+              setState(() {
+                _currentBottomNavIndex = index;
+              });
+              _handleNavigation(index);
+            },
+          ),
         ),
       ),
     );
@@ -98,9 +101,17 @@ class _ProductsViewState extends State<ProductsView> {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9FF),
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
-        onPressed: () => NavigationService.goBack(),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
+          onPressed: () => NavigationService.goBack(),
+        ),
       ),
       title: Text(
         'Hello $_userName!',
@@ -130,10 +141,6 @@ class _ProductsViewState extends State<ProductsView> {
           context: context,
           radius: 18,
           padding: const EdgeInsets.only(right: 16.0),
-          onTap: () {
-            // Navigate to profile
-            NavigationService.navigateAndReplace(AppRoutes.profile);
-          },
         ),
       ],
     );

@@ -11,6 +11,7 @@ import '../../screens/auth/reset_password/view/reset_password_view.dart';
 import '../../screens/profile/view/profile_view.dart';
 import '../../screens/products/view/products_view.dart';
 import '../../screens/products/product_details/view/product_details_view.dart';
+import '../../screens/settings/view/settings_view.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -97,15 +98,7 @@ class RouteGenerator {
         return _createRoute(const ProfileView(), settings.name!);
 
       case AppRoutes.settings:
-      // TODO: Implement SettingsScreen
-        return _createRoute(
-          const Scaffold(
-            body: Center(
-              child: Text('Settings Screen - Coming Soon'),
-            ),
-          ),
-          settings.name!,
-        );
+        return _createRoute(const SettingsView(), settings.name!);
 
       case AppRoutes.about:
       // TODO: Implement AboutScreen

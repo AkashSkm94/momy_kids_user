@@ -26,7 +26,9 @@ class ImageUtilsPath{
   // Icons - Address & Location
   static const String icMap = "assets/icons/ic_map.png";
   static const String icBuildings = "assets/icons/ic_buildings.png";
-  
+  static const String icSettingUser = "assets/icons/ic_setting_user.png";
+  static const String icLogout = "assets/icons/ic_logout.png";
+
   // Icons - Actions
   static const String icEdit = "assets/icons/ic_edit.png";
   static const String icDelete = "assets/icons/ic_delete.png";

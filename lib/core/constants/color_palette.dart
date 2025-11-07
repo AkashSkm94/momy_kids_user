@@ -15,6 +15,8 @@ class ColorPalette {
   static const Color bottomUnselectIcon = Color(0xFF979797);
   static const Color tabSelected = Color(0xFFA9C5FF);
   static const Color colorGreen = Color(0xFF49A84C);
+  static const Color settingIconColors = Color(0xFF000000);
+  static const Color settingTextColor = Color(0xFF000000);
   static const Gradient primaryGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,

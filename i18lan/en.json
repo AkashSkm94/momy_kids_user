@@ -29,6 +29,8 @@
   "sort": "Sort",
   "settings": "Settings",
   "profile": "Profile",
+  "account": "Account",
+  "language": "Language",
   "logout": "Logout",
   "logout_confirmation_message": "Are you sure you want to logout?",
   "login": "Login",

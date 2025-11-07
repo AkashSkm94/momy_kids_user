@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/components/app_background.dart';
 import '../../../../core/components/bottom_navigation_bar.dart';
 import '../../../../core/components/image_widgets.dart';
 import '../../../../core/constants/color_palette.dart';
@@ -43,18 +44,20 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
 
     return ChangeNotifierProvider<ProductDetailsViewModel>(
       create: (context) => _viewModel,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F9FF),
-        appBar: _buildAppBar(appLanguage, localizations),
-        body: _buildBody(localizations),
-        bottomNavigationBar: CustomBottomNavigationBar(
-          currentIndex: _currentBottomNavIndex,
-          onTap: (index) {
-            setState(() {
-              _currentBottomNavIndex = index;
-            });
-            _handleNavigation(index);
-          },
+      child: AppBackground(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: _buildAppBar(appLanguage, localizations),
+          body: _buildBody(localizations),
+          bottomNavigationBar: CustomBottomNavigationBar(
+            currentIndex: _currentBottomNavIndex,
+            onTap: (index) {
+              setState(() {
+                _currentBottomNavIndex = index;
+              });
+              _handleNavigation(index);
+            },
+          ),
         ),
       ),
     );
@@ -65,13 +68,14 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
     AppLocalizations localizations,
   ) {
     return AppBar(
-      backgroundColor: const Color(0xFFF5F9FF),
+      backgroundColor: Colors.transparent,
       elevation: 0,
       leading: Container(
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
-          shape: BoxShape.circle,
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         child: IconButton(
           icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
@@ -106,9 +110,6 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
           context: context,
           radius: 18,
           padding: const EdgeInsets.only(right: 16.0),
-          onTap: () {
-            NavigationService.navigateAndReplace(AppRoutes.profile);
-          },
         ),
       ],
     );
@@ -459,10 +460,10 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
               ),
             ),
             const SizedBox(height: 12),
-            _buildFeatureItem(localizations.translate('high_quality_material') ?? 'High Quality Material'),
-            _buildFeatureItem(localizations.translate('safe_for_kids') ?? 'Safe for Kids'),
-            _buildFeatureItem(localizations.translate('fast_delivery') ?? 'Fast Delivery'),
-            _buildFeatureItem(localizations.translate('30_days_return_policy') ?? '30 Days Return Policy'),
+            // _buildFeatureItem(localizations.translate('high_quality_material') ?? 'High Quality Material'),
+            // _buildFeatureItem(localizations.translate('safe_for_kids') ?? 'Safe for Kids'),
+            // _buildFeatureItem(localizations.translate('fast_delivery') ?? 'Fast Delivery'),
+            // _buildFeatureItem(localizations.translate('30_days_return_policy') ?? '30 Days Return Policy'),
 
             const SizedBox(height: 32),
 

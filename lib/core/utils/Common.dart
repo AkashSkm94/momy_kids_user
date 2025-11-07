@@ -5,7 +5,9 @@ import '../components/image_widgets.dart';
 import '../constants/color_palette.dart';
 import '../constants/images_utils.dart';
 import '../localization/appLanguage.dart';
+import '../navigation/navigation_service.dart';
 import '../network/url_manager.dart';
+import '../routes/app_routes.dart';
 import '../storage/local_storage_manager.dart';
 
 class Common{
@@ -81,7 +83,13 @@ class Common{
                profilePictureUrl.isNotEmpty;
 
            return GestureDetector(
-             onTap: onTap,
+             onTap: (){
+               if(onTap == null){
+                 NavigationService.navigateTo(AppRoutes.settings);
+               }else{
+                 onTap;
+               }
+             },
              child: CircleAvatar(
                radius: radius,
                backgroundColor: Colors.grey[300],
