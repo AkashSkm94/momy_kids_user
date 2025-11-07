@@ -134,10 +134,7 @@ class _ProfileViewState extends State<ProfileView> {
         bottomNavigationBar: CustomBottomNavigationBar(
           currentIndex: _currentBottomNavIndex,
           onTap: (index) {
-            setState(() {
-              _currentBottomNavIndex = index;
-            });
-            // TODO: Navigate to different screens based on index
+            _handleBottomNavigation(index);
           },
         ),
       ),
@@ -1914,6 +1911,29 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       ),
     );
+  }
+
+  void _handleBottomNavigation(int index) {
+    switch (index) {
+      case 0: // Home
+        NavigationService.navigateAndReplace(AppRoutes.home);
+        break;
+      case 1: // Services
+        // TODO: Navigate to services
+        break;
+      case 2: // Products
+        NavigationService.navigateAndReplace(AppRoutes.products);
+        break;
+      case 3: // Cart
+        // TODO: Navigate to cart
+        break;
+      case 4: // Menu/Profile
+        // Already on profile page
+        setState(() {
+          _currentBottomNavIndex = index;
+        });
+        break;
+    }
   }
 
   void _handleLogout() async {

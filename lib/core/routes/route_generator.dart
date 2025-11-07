@@ -9,6 +9,7 @@ import '../../screens/auth/register/view/register_view.dart';
 import '../../screens/auth/forgot_password/view/forgot_password_view.dart';
 import '../../screens/auth/reset_password/view/reset_password_view.dart';
 import '../../screens/profile/view/profile_view.dart';
+import '../../screens/products/view/products_view.dart';
 import 'app_routes.dart';
 
 class RouteGenerator {
@@ -79,6 +80,9 @@ class RouteGenerator {
           ),
           settings.name!,
         );
+
+      case AppRoutes.products:
+        return _createRoute(const ProductsView(), settings.name!);
 
       case AppRoutes.profile:
         return _createRoute(const ProfileView(), settings.name!);
@@ -240,6 +244,18 @@ class RouteGenerator {
         );
 
       case AppRoutes.emailOtpVerified:
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          )),
+          child: child,
+        );
+
+      case AppRoutes.products:
         return SlideTransition(
           position: Tween<Offset>(
             begin: const Offset(1.0, 0.0),
