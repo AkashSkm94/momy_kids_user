@@ -101,6 +101,9 @@ class LoginViewModel extends ChangeNotifier {
       final kidsCount = data['kidsCount'] != null ? int.tryParse(data['kidsCount'].toString()) : null;
       final preferredLanguage = data['preferredLanguage']?.toString();
       final role = data['role']?.toString() ?? _role;
+      final profilePicture = data['profilePicture']?.toString() ?? 
+                             data['profile_picture']?.toString() ??
+                             data['photo']?.toString();
 
       if (userId != null && userId.isNotEmpty) {
         await storage.saveUserData(
@@ -112,6 +115,7 @@ class LoginViewModel extends ChangeNotifier {
           kidsCount: kidsCount,
           preferredLanguage: preferredLanguage,
           role: role,
+          profilePicture: profilePicture,
         );
       }
     } catch (e) {
@@ -217,6 +221,14 @@ class LoginViewModel extends ChangeNotifier {
           await storage.setBool(LocalStorageManager.keyIsLoggedIn, true);
           if (_role != null) {
             await storage.setString(LocalStorageManager.keyUserRole, _role!);
+          }
+          
+          // Save profile picture if available
+          final profilePicture = data['profilePicture']?.toString() ?? 
+                                data['profile_picture']?.toString() ??
+                                data['photo']?.toString();
+          if (profilePicture != null && profilePicture.isNotEmpty) {
+            await storage.setString(LocalStorageManager.keyProfilePicture, profilePicture);
           }
           
           // Save complete session data

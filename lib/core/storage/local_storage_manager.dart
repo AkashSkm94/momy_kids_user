@@ -36,6 +36,7 @@ class LocalStorageManager {
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyPreferredLanguage = 'preferred_language';
   static const String keyUserRole = 'user_role';
+  static const String keyProfilePicture = 'profile_picture';
 
   // ==================== String Operations ====================
 
@@ -162,6 +163,7 @@ class LocalStorageManager {
     int? kidsCount,
     String? preferredLanguage,
     String? role,
+    String? profilePicture,
   }) async {
     await _ensureInitialized();
     
@@ -187,6 +189,10 @@ class LocalStorageManager {
         await setString(keyUserRole, role);
       }
       
+      if (profilePicture != null && profilePicture.isNotEmpty) {
+        await setString(keyProfilePicture, profilePicture);
+      }
+      
       await setBool(keyIsLoggedIn, true);
       return true;
     } catch (e) {
@@ -205,6 +211,7 @@ class LocalStorageManager {
       'kidsCount': getInt(keyKidsCount),
       'preferredLanguage': getString(keyPreferredLanguage),
       'role': getString(keyUserRole),
+      'profilePicture': getString(keyProfilePicture),
       'isLoggedIn': getBool(keyIsLoggedIn) ?? false,
     };
   }
@@ -238,6 +245,7 @@ class LocalStorageManager {
       await remove(keyKidsCount);
       await remove(keyAuthToken);
       await remove(keyUserRole);
+      await remove(keyProfilePicture);
       await setBool(keyIsLoggedIn, false);
       return true;
     } catch (e) {

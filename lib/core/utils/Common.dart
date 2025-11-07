@@ -5,6 +5,8 @@ import '../components/image_widgets.dart';
 import '../constants/color_palette.dart';
 import '../constants/images_utils.dart';
 import '../localization/appLanguage.dart';
+import '../network/url_manager.dart';
+import '../storage/local_storage_manager.dart';
 
 class Common{
 
@@ -60,4 +62,87 @@ class Common{
        ),
      );
    }
+
+   static Widget profileIcon({
+     required BuildContext context,
+     double radius = 18,
+     VoidCallback? onTap,
+     EdgeInsets? padding,
+   }) {
+     return Padding(
+       padding: padding ?? const EdgeInsets.only(right: 16.0, left: 16.0),
+       child: FutureBuilder<String?>(
+         future: _loadProfilePictureUrl(),
+         builder: (context, snapshot) {
+           String? profilePictureUrl = snapshot.data;
+
+           // Check if we have a valid URL
+           final bool hasValidUrl = profilePictureUrl != null &&
+               profilePictureUrl.isNotEmpty;
+
+           return GestureDetector(
+             onTap: onTap,
+             child: CircleAvatar(
+               radius: radius,
+               backgroundColor: Colors.grey[300],
+               child: hasValidUrl
+                   ? ClipOval(
+                 child: Image.network(
+                   _getFullImageUrl(profilePictureUrl!),
+                   width: radius * 2,
+                   height: radius * 2,
+                   fit: BoxFit.cover,
+                   errorBuilder: (context, error, stackTrace) {
+                     // Show default icon if image fails to load
+                     return Icon(
+                       Icons.person,
+                       size: radius * 0.6,
+                       color: Colors.grey,
+                     );
+                   },
+                   loadingBuilder: (context, child, loadingProgress) {
+                     if (loadingProgress == null) return child;
+                     // Show loading indicator while image loads
+                     return Center(
+                       child: CircularProgressIndicator(
+                         value: loadingProgress.expectedTotalBytes != null
+                             ? loadingProgress.cumulativeBytesLoaded /
+                             loadingProgress.expectedTotalBytes!
+                             : null,
+                         strokeWidth: 2,
+                         color: Colors.grey,
+                       ),
+                     );
+                   },
+                 ),
+               )
+                   : Icon(
+                 Icons.person,
+                 size: radius * 0.6,
+                 color: Colors.grey,
+               ),
+             ),
+           );
+         },
+       ),
+     );
+   }
+
+   /// Load profile picture URL from local storage
+   static Future<String?> _loadProfilePictureUrl() async {
+     try {
+       final storage = await LocalStorageManager.getInstance();
+       return storage.getString(LocalStorageManager.keyProfilePicture);
+     } catch (e) {
+       return null;
+     }
+   }
+
+   /// Get full image URL by combining base URL with image path
+   static String _getFullImageUrl(String imageUrl) {
+     // Handle image URL - remove leading slash if present to avoid double slashes
+     final cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+     return UrlManager.imageBaseUrl + cleanUrl;
+   }
+
 }

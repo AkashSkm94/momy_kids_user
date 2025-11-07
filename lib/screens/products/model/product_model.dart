@@ -12,7 +12,7 @@ class ProductModel {
   final bool isActive;
   final String createdAt;
   final String updatedAt;
-  final CategoryModel? category;
+  final CategoryModel category;
   final List<ProductImageModel> images;
 
   ProductModel({
@@ -26,45 +26,27 @@ class ProductModel {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
-    this.category,
+    required this.category,
     required this.images,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Parse price
-    double price = 0.0;
-    if (json['price'] != null) {
-      final priceStr = json['price'].toString();
-      price = double.tryParse(priceStr) ?? 0.0;
-    }
-
-    // Parse category
-    CategoryModel? category;
-    if (json['category'] != null) {
-      category = CategoryModel.fromJson(json['category'] as Map<String, dynamic>);
-    }
-
-    // Parse images
-    List<ProductImageModel> images = [];
-    if (json['images'] != null && json['images'] is List) {
-      images = (json['images'] as List)
-          .map((img) => ProductImageModel.fromJson(img as Map<String, dynamic>))
-          .toList();
-    }
-
     return ProductModel(
-      id: json['id'] as String? ?? '',
-      vendorId: json['vendor_id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      price: price,
-      stock: json['stock'] as int? ?? 0,
-      categoryId: json['category_id'] as String? ?? '',
-      isActive: json['is_active'] as bool? ?? true,
-      createdAt: json['created_at'] as String? ?? '',
-      updatedAt: json['updated_at'] as String? ?? '',
-      category: category,
-      images: images,
+      id: json['id'] ?? '',
+      vendorId: json['vendor_id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      stock: json['stock'] ?? 0,
+      categoryId: json['category_id'] ?? '',
+      isActive: json['is_active'] ?? false,
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
+      category: CategoryModel.fromJson(json['category'] ?? {}),
+      images: (json['images'] as List<dynamic>?)
+              ?.map((image) => ProductImageModel.fromJson(image))
+              .toList() ??
+          [],
     );
   }
 
@@ -74,18 +56,20 @@ class ProductModel {
       'vendor_id': vendorId,
       'name': name,
       'description': description,
-      'price': price.toStringAsFixed(2),
+      'price': price.toString(),
       'stock': stock,
       'category_id': categoryId,
       'is_active': isActive,
       'created_at': createdAt,
       'updated_at': updatedAt,
-      'category': category?.toJson(),
-      'images': images.map((img) => img.toJson()).toList(),
+      'category': category.toJson(),
+      'images': images.map((image) => image.toJson()).toList(),
     };
   }
 
-  // Get primary image URL or first image URL
+  // Helper getters
+  String get categoryName => category.name;
+  
   String? get primaryImageUrl {
     final primaryImage = images.firstWhere(
       (img) => img.isPrimary,
@@ -98,11 +82,6 @@ class ProductModel {
       ),
     );
     return primaryImage.imageUrl.isNotEmpty ? primaryImage.imageUrl : null;
-  }
-
-  // Get category name
-  String get categoryName {
-    return category?.name ?? 'Uncategorized';
   }
 }
 

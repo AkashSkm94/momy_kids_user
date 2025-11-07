@@ -15,11 +15,11 @@ class ProductImageModel {
 
   factory ProductImageModel.fromJson(Map<String, dynamic> json) {
     return ProductImageModel(
-      id: json['id'] as String? ?? '',
-      productId: json['product_id'] as String? ?? '',
-      imageUrl: json['image_url'] as String? ?? '',
-      isPrimary: json['is_primary'] as bool? ?? false,
-      createdAt: json['created_at'] as String? ?? '',
+      id: json['id'] ?? '',
+      productId: json['product_id'] ?? '',
+      imageUrl: json['image_url'] ?? '',
+      isPrimary: json['is_primary'] ?? false,
+      createdAt: json['created_at'] ?? '',
     );
   }
 

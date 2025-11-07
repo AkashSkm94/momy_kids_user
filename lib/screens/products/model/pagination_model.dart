@@ -13,10 +13,10 @@ class PaginationModel {
 
   factory PaginationModel.fromJson(Map<String, dynamic> json) {
     return PaginationModel(
-      page: json['page'] as int? ?? 1,
-      limit: json['limit'] as int? ?? 10,
-      total: json['total'] as int? ?? 0,
-      totalPages: json['totalPages'] as int? ?? 1,
+      page: json['page'] ?? 1,
+      limit: json['limit'] ?? 10,
+      total: json['total'] ?? 0,
+      totalPages: json['totalPages'] ?? 1,
     );
   }
 

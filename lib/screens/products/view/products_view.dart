@@ -36,6 +36,7 @@ class _ProductsViewState extends State<ProductsView> {
     _loadUserName();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _viewModel.loadCategories(); // Load categories first
       _viewModel.loadProducts(reset: true);
     });
   }
@@ -125,17 +126,14 @@ class _ProductsViewState extends State<ProductsView> {
           ),
         ),
         // Profile Picture
-        Padding(
+        Common.profileIcon(
+          context: context,
+          radius: 18,
           padding: const EdgeInsets.only(right: 16.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: Colors.grey[300],
-            child: const Icon(
-              Icons.person,
-              size: 20,
-              color: Colors.grey,
-            ),
-          ),
+          onTap: () {
+            // Navigate to profile
+            NavigationService.navigateAndReplace(AppRoutes.profile);
+          },
         ),
       ],
     );
@@ -474,7 +472,14 @@ class _ProductsViewState extends State<ProductsView> {
     final imageUrl = product.primaryImageUrl != null
         ? '${UrlManager.imageBaseUrl}${product.primaryImageUrl}'
         : null;
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        NavigationService.navigateTo(
+          AppRoutes.productDetails,
+          arguments: {'productId': product.id},
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -630,6 +635,7 @@ class _ProductsViewState extends State<ProductsView> {
           ),
         ],
       ),
+    ),
     );
   }
 

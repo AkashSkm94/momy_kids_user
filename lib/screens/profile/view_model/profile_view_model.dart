@@ -139,10 +139,10 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       final localizations = AppLocalizations.of(context);
 
-      String language = localizations.locale!.languageCode!;
-      if(language.isNotEmpty){
-        language = language[0].toUpperCase() + language.substring(1);
-      }
+      String language = localizations.locale!.languageCode! == "en" ? "Ar" : "En";
+      // if(language.isNotEmpty){
+      //   language = language[0].toUpperCase() + language.substring(1);
+      // }
       final response = await ApiUtils.get(
         endpoint: '${UrlManager.governorates}$language',
       );
@@ -465,6 +465,11 @@ class ProfileViewModel extends ChangeNotifier {
           await storage.setString(LocalStorageManager.keyUserEmail, _email);
           await storage.setString(LocalStorageManager.keyUserPhone, _phoneNumber);
           
+          // Save profile picture to local storage if available
+          if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
+            await storage.setString(LocalStorageManager.keyProfilePicture, _profileImagePath!);
+          }
+          
           if (_spouseName.isNotEmpty) {
             await storage.setString(LocalStorageManager.keySpouseName, _spouseName);
           }
@@ -584,9 +589,33 @@ class ProfileViewModel extends ChangeNotifier {
       if (response.isSuccess) {
         setSuccess(true);
         
+        // Check if response contains updated profile picture
+        String? updatedProfilePicture;
+        if (response.hasData && response.data != null) {
+          final responseData = response.data;
+          // Check multiple possible locations for profile picture in response
+          updatedProfilePicture = responseData['data']?['profilePicture']?.toString() ??
+                                  responseData['data']?['profile_picture']?.toString() ??
+                                  responseData['profilePicture']?.toString() ??
+                                  responseData['profile_picture']?.toString();
+          
+          // Update local profile image path if available
+          if (updatedProfilePicture != null && updatedProfilePicture.isNotEmpty) {
+            _profileImagePath = updatedProfilePicture;
+          }
+        }
+        
         // Save updated data to local storage
         await storage.setString(LocalStorageManager.keyUserName, _name);
         await storage.setString(LocalStorageManager.keyUserPhone, _phoneNumber);
+        
+        // Save profile picture to local storage if available
+        if (updatedProfilePicture != null && updatedProfilePicture.isNotEmpty) {
+          await storage.setString(LocalStorageManager.keyProfilePicture, updatedProfilePicture);
+        } else if (_profileImagePath != null && _profileImagePath!.isNotEmpty) {
+          // If no updated picture in response but we have a local path, save it
+          await storage.setString(LocalStorageManager.keyProfilePicture, _profileImagePath!);
+        }
         
         if (_spouseName.isNotEmpty) {
           await storage.setString(LocalStorageManager.keySpouseName, _spouseName);
@@ -682,6 +711,10 @@ class ProfileViewModel extends ChangeNotifier {
         // Clear local profile image
         _profileImage = null;
         _profileImagePath = null;
+        
+        // Remove profile picture from local storage
+        await storage.remove(LocalStorageManager.keyProfilePicture);
+        
         setSuccess(true);
         notifyListeners();
         return true;

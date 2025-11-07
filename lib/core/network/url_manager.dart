@@ -70,6 +70,8 @@ class UrlManager {
   static const String deleteProfilePhoto = '/profile/photo/delete/{id}';
   static const String governorates = '/governorates/getAll?lang=';
   static const String productsGetAll = '/products/getAll';
+  static const String productsCategoryAll = '/products/category/all';
+  static const String productDetails = '/products/product/{productId}';
 }
 
 

@@ -11,6 +11,7 @@ class AppRoutes {
   static const String emailOtpVerified = '/email-otp-verified';
   static const String home = '/home';
   static const String products = '/products';
+  static const String productDetails = '/product-details';
   static const String profile = '/profile';
   static const String settings = '/settings';
   static const String about = '/about';
@@ -30,6 +31,7 @@ class AppRoutes {
     'emailOtpVerified': emailOtpVerified,
     'home': home,
     'products': products,
+    'productDetails': productDetails,
     'profile': profile,
     'settings': settings,
     'about': about,
