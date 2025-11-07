@@ -1820,7 +1820,17 @@ class _ProfileViewState extends State<ProfileView> {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       final localizations = AppLocalizations.of(context);
       
-      await _viewModel.updateProfile(context);
+      // Prepare phone number with country code if verified
+      String? phoneNumberWithCode;
+      if (_isPhoneVerified && _phoneController.text != _originalPhoneNumber) {
+        phoneNumberWithCode = '${_viewModel.selectedCountryCode}${_phoneController.text}';
+      }
+      
+      await _viewModel.updateProfile(
+        context,
+        includePhoneNumber: _isPhoneVerified && _phoneController.text != _originalPhoneNumber,
+        phoneNumberWithCode: phoneNumberWithCode,
+      );
       
       // Check if widget is still mounted before showing snackbars
       if (!mounted) return;

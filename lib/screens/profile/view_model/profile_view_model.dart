@@ -500,7 +500,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   // Update profile
-  Future<void> updateProfile(BuildContext context) async {
+  Future<void> updateProfile(BuildContext context, {bool includePhoneNumber = false, String? phoneNumberWithCode}) async {
     final localizations = AppLocalizations.of(context);
     
     if (_name.isEmpty) {
@@ -542,6 +542,11 @@ class ProfileViewModel extends ChangeNotifier {
       
       if (_childrenCount.isNotEmpty) {
         fields['kidsCount'] = _childrenCount;
+      }
+
+      // Add phone number only if verified
+      if (includePhoneNumber && phoneNumberWithCode != null && phoneNumberWithCode.isNotEmpty) {
+        fields['phoneNumber'] = phoneNumberWithCode;
       }
 
       // Add address fields
