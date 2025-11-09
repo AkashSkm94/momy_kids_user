@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/components/app_background.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
+import '../../../core/components/confirm_bottom_sheet.dart';
 import '../../../core/components/primary-button.dart';
 import '../../../core/constants/color_palette.dart';
 import '../../../core/localization/appLocalization.dart';
@@ -255,8 +256,23 @@ class _CartViewState extends State<CartView> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => viewModel.removeItem(item.id),
-                      child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icDelete,),
+                      onTap: () async {
+                        final confirmed = await ConfirmBottomSheet.show(
+                          context,
+                          title: localizations.translate('delete') ?? 'Delete',
+                          message: localizations.translate('ARE_YOU_SURE_DELETE_ITEM') ??
+                              localizations.translate('are_you_sure_delete_kid'),
+                          confirmText: localizations.translate('yes'),
+                          cancelText: localizations.translate('cancel'),
+                        );
+                        if (confirmed) {
+                          await viewModel.removeItem(context, item.id);
+                        }
+                      },
+                      child: BaseImage(
+                        source: ImageSource.assetIcons,
+                        assetPath: ImageUtilsPath.icDelete,
+                      ),
                     ),
                   ],
                 ),
@@ -316,47 +332,59 @@ class _CartViewState extends State<CartView> {
     required CartItemModel item,
     required CartViewModel viewModel,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        //color: ColorPalette.primary,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-                color: ColorPalette.primary,
-                shape: BoxShape.circle),
-            child: _buildQuantityButton(
-              icon: Icons.remove,
-              onTap: () => viewModel.decrementQuantity(item.id),
-            ),
+    final isUpdating = viewModel.isItemUpdating(item.id);
+
+    return IgnorePointer(
+      ignoring: isUpdating,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: isUpdating ? 0.5 : 1,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
           ),
-          Container(
-            width: 40,
-            alignment: Alignment.center,
-            child: Text(
-              item.quantity.toString().padLeft(2, '0'),
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w500,
-                fontSize: 16,
-                color: Colors.black,
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  color: ColorPalette.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: _buildQuantityButton(
+                  icon: Icons.remove,
+                  onTap: () => viewModel.decrementQuantity(item.id),
+                  enabled: !isUpdating && item.quantity > 1,
+                ),
               ),
-            ),
+              Container(
+                width: 40,
+                alignment: Alignment.center,
+                child: Text(
+                  item.quantity.toString().padLeft(2, '0'),
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: const BoxDecoration(
+                  color: ColorPalette.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: _buildQuantityButton(
+                  icon: Icons.add,
+                  onTap: () => viewModel.incrementQuantity(item.id),
+                  enabled: !isUpdating,
+                ),
+              ),
+            ],
           ),
-          Container(
-            decoration: BoxDecoration(
-                color: ColorPalette.primary,
-                shape: BoxShape.circle),
-            child: _buildQuantityButton(
-              icon: Icons.add,
-              onTap: () => viewModel.incrementQuantity(item.id),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -364,10 +392,11 @@ class _CartViewState extends State<CartView> {
   Widget _buildQuantityButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool enabled = true,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Padding(
         padding: const EdgeInsets.all(6.0),
         child: Icon(

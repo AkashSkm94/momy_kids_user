@@ -181,6 +181,52 @@ class ApiUtils {
     }
   }
 
+  /// Generic PATCH request
+  static Future<ApiResponse> patch({
+    required String endpoint,
+    Map<String, dynamic>? body,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      if (!await hasInternetConnection()) {
+        return ApiResponse(
+          success: false,
+          message: 'No internet connection',
+          statusCode: 0,
+        );
+      }
+
+      final requestHeaders = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?headers,
+      };
+
+      final token = await _getAuthToken();
+      if (token != null) {
+        requestHeaders['Authorization'] = 'Bearer $token';
+      }
+
+      final response = await http.patch(
+        Uri.parse(UrlManager.getFullUrl(endpoint)),
+        headers: requestHeaders,
+        body: body != null ? jsonEncode(body) : null,
+      ).timeout(const Duration(seconds: _timeoutDuration));
+
+      print('url ${UrlManager.getFullUrl(endpoint)}');
+      print('requestHeaders ${requestHeaders}');
+      print('body ${jsonEncode(body)}');
+      print('response ${response.body}');
+      return _handleResponse(response);
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Network error: ${e.toString()}',
+        statusCode: 0,
+      );
+    }
+  }
+
   /// Generic DELETE request
   static Future<ApiResponse> delete({
     required String endpoint,

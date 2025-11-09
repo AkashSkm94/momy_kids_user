@@ -382,5 +382,7 @@
   "discount": "Discount",
   "delivery_charges": "Delivery Charges",
   "total": "Total",
-  "proceed_to_checkout": "Proceed to Checkout"
+  "proceed_to_checkout": "Proceed to Checkout",
+  "item_removed_success": "Item removed from cart",
+  "ARE_YOU_SURE_DELETE_ITEM": "Are you sure you want to remove this item?"
 }

@@ -382,5 +382,7 @@
   "discount": "الخصم",
   "delivery_charges": "رسوم التوصيل",
   "total": "الإجمالي",
-  "proceed_to_checkout": "المتابعة إلى الدفع"
+  "proceed_to_checkout": "المتابعة إلى الدفع",
+  "item_removed_success": "تم إزالة العنصر من السلة",
+  "ARE_YOU_SURE_DELETE_ITEM": "هل أنت متأكد أنك تريد إزالة هذا العنصر؟"
 }
