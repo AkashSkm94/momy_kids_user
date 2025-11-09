@@ -90,8 +90,76 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   void setPhoneNumber(String phoneNumber) {
-    _phoneNumber = phoneNumber;
+    // Phone number should be set without country code
+    // Remove any country code if present
+    _phoneNumber = _removeCountryCode(phoneNumber);
     notifyListeners();
+  }
+  
+  /// Parse phone number with country code and set both phone number and country
+  void setPhoneNumberWithCountryCode(String phoneNumberWithCode) {
+    if (phoneNumberWithCode.isEmpty) {
+      _phoneNumber = '';
+      return;
+    }
+    
+    // Try to extract country code from the phone number
+    Map<String, dynamic>? matchedCountry;
+    String? extractedCode;
+    String remainingNumber = phoneNumberWithCode;
+    
+    // Sort country codes by length (longest first) to match correctly
+    final sortedCodes = List<Map<String, dynamic>>.from(countryCodes);
+    sortedCodes.sort((a, b) {
+      final aCode = a['code'] as String;
+      final bCode = b['code'] as String;
+      return bCode.length.compareTo(aCode.length);
+    });
+    
+    // Try to match country code
+    for (var country in sortedCodes) {
+      final code = country['code'] as String;
+      if (phoneNumberWithCode.startsWith(code)) {
+        matchedCountry = country;
+        extractedCode = code;
+        remainingNumber = phoneNumberWithCode.substring(code.length);
+        break;
+      }
+    }
+    
+    if (matchedCountry != null && extractedCode != null) {
+      _selectedCountryCode = extractedCode;
+      _selectedCountry = matchedCountry['country'] as String;
+      _phoneNumber = remainingNumber;
+    } else {
+      // If no country code matched, assume default and set as is
+      _phoneNumber = phoneNumberWithCode;
+    }
+    
+    notifyListeners();
+  }
+  
+  /// Remove country code from phone number if present
+  String _removeCountryCode(String phoneNumber) {
+    if (phoneNumber.isEmpty) return phoneNumber;
+    
+    // Sort country codes by length (longest first) to match correctly
+    final sortedCodes = List<Map<String, dynamic>>.from(countryCodes);
+    sortedCodes.sort((a, b) {
+      final aCode = a['code'] as String;
+      final bCode = b['code'] as String;
+      return bCode.length.compareTo(aCode.length);
+    });
+    
+    // Try to remove country code
+    for (var country in sortedCodes) {
+      final code = country['code'] as String;
+      if (phoneNumber.startsWith(code)) {
+        return phoneNumber.substring(code.length);
+      }
+    }
+    
+    return phoneNumber;
   }
 
   void setSelectedCountry(String country) {
@@ -168,38 +236,138 @@ class ProfileViewModel extends ChangeNotifier {
 
   // Check if a kid with the same name, gender, and DOB already exists
   bool isDuplicateKid(Kid newKid, {String? excludeKidId}) {
-    return _kids.any((existingKid) {
+    // Return false if no kids exist
+    if (_kids.isEmpty) {
+      return false;
+    }
+
+    // Normalize the new kid's data for comparison
+    final newKidName = newKid.name.trim();
+    final newKidGender = newKid.gender.trim();
+    
+    // Return false if new kid's name or gender is empty (invalid data)
+    if (newKidName.isEmpty || newKidGender.isEmpty) {
+      return false;
+    }
+    
+    final newKidNameLower = newKidName.toLowerCase();
+    final newKidGenderLower = newKidGender.toLowerCase();
+    
+    // Normalize date of birth to date-only (year, month, day)
+    DateTime? newKidDateOnly;
+    if (newKid.dateOfBirth != null) {
+      newKidDateOnly = DateTime(
+        newKid.dateOfBirth!.year,
+        newKid.dateOfBirth!.month,
+        newKid.dateOfBirth!.day,
+      );
+    }
+
+    // Check each existing kid
+    for (var existingKid in _kids) {
       // Skip the kid being updated (if excludeKidId is provided)
-      if (excludeKidId != null && existingKid.id == excludeKidId) {
-        return false;
+      if (excludeKidId != null && 
+          existingKid.id != null && 
+          existingKid.id.isNotEmpty && 
+          existingKid.id == excludeKidId) {
+        continue; // Skip this kid, check next one
       }
+      
+      // Normalize existing kid's data
+      final existingKidName = existingKid.name.trim();
+      final existingKidGender = existingKid.gender.trim();
+      
+      // Skip if existing kid has empty name or gender
+      if (existingKidName.isEmpty || existingKidGender.isEmpty) {
+        continue;
+      }
+      
+      final existingKidNameLower = existingKidName.toLowerCase();
+      final existingKidGenderLower = existingKidGender.toLowerCase();
       
       // Compare name (case-insensitive)
-      final nameMatches = existingKid.name.trim().toLowerCase() == 
-                         newKid.name.trim().toLowerCase();
-      
-      // Compare gender (case-insensitive)
-      final genderMatches = existingKid.gender.trim().toLowerCase() == 
-                           newKid.gender.trim().toLowerCase();
-      
-      // Compare date of birth
-      bool dobMatches = false;
-      if (existingKid.dateOfBirth == null && newKid.dateOfBirth == null) {
-        dobMatches = true;
-      } else if (existingKid.dateOfBirth != null && newKid.dateOfBirth != null) {
-        // Compare only year, month, and day (ignore time)
-        final existingDob = existingKid.dateOfBirth!;
-        final newDob = newKid.dateOfBirth!;
-        dobMatches = existingDob.year == newDob.year &&
-                    existingDob.month == newDob.month &&
-                    existingDob.day == newDob.day;
+      if (existingKidNameLower != newKidNameLower) {
+        continue; // Name doesn't match, not a duplicate
       }
       
-      return nameMatches && genderMatches && dobMatches;
-    });
+      // Compare gender (case-insensitive)
+      if (existingKidGenderLower != newKidGenderLower) {
+        continue; // Gender doesn't match, not a duplicate
+      }
+      
+      // Compare date of birth (only year, month, and day - ignore time and timezone)
+      bool dobMatches = false;
+      
+      if (existingKid.dateOfBirth == null && newKidDateOnly == null) {
+        // Both dates are null - if name and gender match, it's a duplicate
+        dobMatches = true;
+      } else if (existingKid.dateOfBirth != null && newKidDateOnly != null) {
+        // Both have dates, normalize and compare
+        final existingKidDateOnly = DateTime(
+          existingKid.dateOfBirth!.year,
+          existingKid.dateOfBirth!.month,
+          existingKid.dateOfBirth!.day,
+        );
+        
+        // Compare normalized dates
+        dobMatches = existingKidDateOnly.year == newKidDateOnly.year &&
+                    existingKidDateOnly.month == newKidDateOnly.month &&
+                    existingKidDateOnly.day == newKidDateOnly.day;
+      }
+      // If one date is null and the other isn't, dobMatches remains false
+      
+      // All three fields (name, gender, dateOfBirth) must match for it to be a duplicate
+      if (dobMatches) {
+        return true; // Found a duplicate
+      }
+    }
+    
+    // No duplicates found
+    return false;
   }
 
-  // Add kids via API
+  // Add a single kid via API
+  Future<bool> addSingleKidToProfile(BuildContext context, Kid kid) async {
+    final localizations = AppLocalizations.of(context);
+
+    setLoading(true);
+    clearError();
+
+    try {
+      // Prepare single child data for API
+      final childPayload = kid.toApiJson();
+      
+      final response = await ApiUtils.post(
+        endpoint: UrlManager.addKids,
+        body: {
+          'children': [childPayload], // Send only the single kid
+        },
+      );
+
+      if (response.isSuccess) {
+        setSuccess(true);
+        return true;
+      } else {
+        // Translate the error message from API response
+        final errorMsg = response.message.isNotEmpty 
+            ? localizations.translate(response.message) 
+            : localizations.translate('kids_add_failed');
+        setError(errorMsg, errorKey: response.message);
+        return false;
+      }
+    } catch (e) {
+      setError(
+        localizations.translate('kids_add_failed'),
+        errorKey: 'kids_add_failed',
+      );
+      print('Error adding kid: $e');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Add kids via API (kept for backward compatibility if needed)
   Future<bool> addKidsToProfile(BuildContext context) async {
     final localizations = AppLocalizations.of(context);
     
@@ -437,7 +605,14 @@ class ProfileViewModel extends ChangeNotifier {
           // Update individual fields for easy access
           _name = _userProfile!.name;
           _email = _userProfile!.email;
-          _phoneNumber = _userProfile!.phoneNumber;
+          
+          // Parse phone number with country code
+          if (_userProfile!.phoneNumber.isNotEmpty) {
+            setPhoneNumberWithCountryCode(_userProfile!.phoneNumber);
+          } else {
+            _phoneNumber = '';
+          }
+          
           _profileImagePath = _userProfile!.profilePicture;
           
           // Update customer profile fields if available
@@ -451,6 +626,7 @@ class ProfileViewModel extends ChangeNotifier {
             _governorate = _userProfile!.customerProfile!.governorate ?? '';
             
             // Convert children to kids list
+            _kids = [];
             _kids = _userProfile!.customerProfile!.children.map((child) {
               return Kid(
                 id: child.id,

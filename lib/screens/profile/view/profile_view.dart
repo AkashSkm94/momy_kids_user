@@ -777,9 +777,8 @@ class _ProfileViewState extends State<ProfileView> {
                         return;
                       }
                       
-                      viewModel.addKid(kid);
-                      // Call API to add kids
-                      final success = await viewModel.addKidsToProfile(context);
+                      // Call API to add only this single kid (don't add to local list first)
+                      final success = await viewModel.addSingleKidToProfile(context, kid);
                       if (!this.mounted) return;
                       
                       if (success) {

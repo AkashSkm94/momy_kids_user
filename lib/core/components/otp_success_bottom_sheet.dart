@@ -20,58 +20,61 @@ class OtpSuccessBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+    return PopScope(
+      canPop: false, // Disable back button
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 24,right: 24,bottom: 24,top: 0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              BaseImage(source: ImageSource.asset,assetPath: ImageUtilsPath.bottomSheetTop,),
-              const SizedBox(height: 24),
-              
-              // Success Icon
-              BaseImage(source: ImageSource.asset,assetPath: ImageUtilsPath.otpSuccess,),
-              
-              const SizedBox(height: 24),
-              
-              // Success Title
-              SubHeadingText(
-                text: localizations.translate('phone_verified'),
-                fontSize: 16,
-                color: ColorPalette.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              // Continue Button
-              SizedBox(
-                width: double.infinity,
-                child: PrimaryButton(
-                  label: localizations.translate('proceed'),
-                  onClick: () {
-                    Navigator.pop(context); // Close bottom sheet
-                    if (onProceed != null) {
-                      onProceed!();
-                    } else {
-                      // Default behavior: navigate to register
-                      NavigationService.navigateAndReplace(
-                        AppRoutes.register,
-                        arguments: {'phoneNumber': phoneNumber},
-                      );
-                    }
-                  },
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 24,right: 24,bottom: 24,top: 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BaseImage(source: ImageSource.asset,assetPath: ImageUtilsPath.bottomSheetTop,),
+                const SizedBox(height: 24),
+                
+                // Success Icon
+                BaseImage(source: ImageSource.asset,assetPath: ImageUtilsPath.otpSuccess,),
+                
+                const SizedBox(height: 24),
+                
+                // Success Title
+                SubHeadingText(
+                  text: localizations.translate('phone_verified'),
+                  fontSize: 16,
+                  color: ColorPalette.textPrimary,
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 24),
+                // Continue Button
+                SizedBox(
+                  width: double.infinity,
+                  child: PrimaryButton(
+                    label: localizations.translate('proceed'),
+                    onClick: () {
+                      Navigator.pop(context); // Close bottom sheet
+                      if (onProceed != null) {
+                        onProceed!();
+                      } else {
+                        // Default behavior: navigate to register
+                        NavigationService.navigateAndReplace(
+                          AppRoutes.register,
+                          arguments: {'phoneNumber': phoneNumber},
+                        );
+                      }
+                    },
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),
