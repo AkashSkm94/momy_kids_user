@@ -106,6 +106,7 @@
   "PROFILE_KIDS_BATCH_UPDATE_COMPLETED": "تم تحديث ملف الطفل بنجاح",
   "session_expired": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.",
   "unauthorized_access": "وصول غير مصرح به. يرجى تسجيل الدخول مرة أخرى.",
+  "unauthorized_logout": "وصول غير مصرح به. سيتم تسجيل الخروج...",
   "logout_successful": "تم تسجيل الخروج بنجاح",
   "validating_session": "جاري التحقق من الجلسة...",
   "session_valid": "الجلسة صالحة",

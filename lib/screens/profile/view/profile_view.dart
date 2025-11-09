@@ -183,29 +183,34 @@ class _ProfileViewState extends State<ProfileView> {
           padding: const EdgeInsets.only(right: 16.0),
           child: Consumer<ProfileViewModel>(
             builder: (context, viewModel, child) {
-              return CircleAvatar(
-                radius: 18,
-                backgroundColor: Colors.grey[300],
-                backgroundImage:
-                    viewModel.profileImage != null
-                        ? FileImage(viewModel.profileImage!)
-                        : (viewModel.profileImagePath != null &&
-                            viewModel.profileImagePath!.isNotEmpty)
-                        ? NetworkImage(
-                          UrlManager.imageBaseUrl + viewModel.profileImagePath!,
-                        )
-                        : null,
-                child:
-                    viewModel.profileImage == null
-                        ? ((viewModel.profileImagePath == null ||
-                                viewModel.profileImagePath!.isEmpty)
-                            ? const Icon(
-                              Icons.person,
-                              size: 20,
-                              color: Colors.grey,
-                            )
-                            : null)
-                        : null,
+              return InkWell(
+                onTap: (){
+                  NavigationService.navigateTo(AppRoutes.settings);
+                },
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage:
+                      viewModel.profileImage != null
+                          ? FileImage(viewModel.profileImage!)
+                          : (viewModel.profileImagePath != null &&
+                              viewModel.profileImagePath!.isNotEmpty)
+                          ? NetworkImage(
+                            UrlManager.imageBaseUrl + viewModel.profileImagePath!,
+                          )
+                          : null,
+                  child:
+                      viewModel.profileImage == null
+                          ? ((viewModel.profileImagePath == null ||
+                                  viewModel.profileImagePath!.isEmpty)
+                              ? const Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.grey,
+                              )
+                              : null)
+                          : null,
+                ),
               );
             },
           ),

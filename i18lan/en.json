@@ -107,6 +107,7 @@
   "PROFILE_KIDS_BATCH_UPDATE_COMPLETED": "Child profile updated successfully",
   "session_expired": "Your session has expired. Please login again.",
   "unauthorized_access": "Unauthorized access. Please login again.",
+  "unauthorized_logout": "Unauthorized. Logging out...",
   "logout_successful": "Logged out successfully",
   "validating_session": "Validating session...",
   "session_valid": "Session is valid",

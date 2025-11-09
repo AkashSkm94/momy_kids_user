@@ -77,7 +77,7 @@ class Kid {
       'age': age,
       'phoneNumber':"",
       'gender': gender.toLowerCase(),
-      'birthDate': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
+      'birthDate': dateOfBirth == null ? "" : (dateOfBirth!.toIso8601String().split('.').first + 'Z'),
     };
   }
 
@@ -88,7 +88,7 @@ class Kid {
       'name': name,
       'age': age,
       'gender': gender,
-      'birthDate': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
+      'birthDate': dateOfBirth == null ? "" : (dateOfBirth!.toIso8601String().split('.').first + 'Z'),
     };
   }
 

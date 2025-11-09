@@ -1,8 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../constants/color_palette.dart';
+import '../localization/appLocalization.dart';
+import '../navigation/navigation_service.dart';
+import '../routes/app_routes.dart';
 import '../storage/local_storage_manager.dart';
 import 'url_manager.dart';
 
@@ -361,11 +365,17 @@ class ApiUtils {
   static ApiResponse _handleResponse(http.Response response) {
     try {
       final Map<String, dynamic> responseData = jsonDecode(response.body);
-      
+      final isSuccess = response.statusCode >= 200 && response.statusCode < 300;
+      final message = responseData['message'] ?? _getDefaultMessage(response.statusCode);
+
+      if (!isSuccess && message == 'Unauthorized') {
+        _handleUnauthorized(responseData['message'], NavigationService.currentContext);
+      }
+
       return ApiResponse(
         success: response.statusCode >= 200 && response.statusCode < 300,
         data: responseData,
-        message: responseData['message'] ?? _getDefaultMessage(response.statusCode),
+        message: message,
         statusCode: response.statusCode,
       );
     } catch (e) {
@@ -403,6 +413,33 @@ class ApiUtils {
       default:
         return 'Unknown error';
     }
+  }
+
+  static Future<void> _handleUnauthorized(String? serverMessage, BuildContext? context) async {
+    try {
+      final ctx = context ?? NavigationService.currentContext;
+      if (ctx != null) {
+        String localizedMessage;
+        try {
+          localizedMessage =
+              AppLocalizations.of(ctx).translate('unauthorized_logout');
+        } catch (_) {
+          localizedMessage = serverMessage ?? 'Unauthorized. Logging out...';
+        }
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text(localizedMessage),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      await clearAuthToken();
+      final storage = await LocalStorageManager.getInstance();
+      await storage.clearAll();
+      NavigationService.navigateAndClearStack(AppRoutes.login);
+    } catch (_) {}
   }
 
   /// Get authentication token

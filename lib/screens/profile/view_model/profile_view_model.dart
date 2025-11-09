@@ -237,93 +237,48 @@ class ProfileViewModel extends ChangeNotifier {
 
   // Check if a kid with the same name, gender, and DOB already exists
   bool isDuplicateKid(Kid newKid, {String? excludeKidId}) {
-    // Return false if no kids exist
-    if (_kids.isEmpty) {
+    if (_kids.isEmpty) return false;
+
+    final newName = newKid.name.trim().toLowerCase();
+    final newGender = newKid.gender.trim().toLowerCase();
+    final newDob = newKid.dateOfBirth != null
+        ? DateTime(
+            newKid.dateOfBirth!.year,
+            newKid.dateOfBirth!.month,
+            newKid.dateOfBirth!.day,
+          )
+        : null;
+
+    if (newName.isEmpty || newGender.isEmpty) {
       return false;
     }
 
-    // Normalize the new kid's data for comparison
-    final newKidName = newKid.name.trim();
-    final newKidGender = newKid.gender.trim();
-    
-    // Return false if new kid's name or gender is empty (invalid data)
-    if (newKidName.isEmpty || newKidGender.isEmpty) {
-      return false;
-    }
-    
-    final newKidNameLower = newKidName.toLowerCase();
-    final newKidGenderLower = newKidGender.toLowerCase();
-    
-    // Normalize date of birth to date-only (year, month, day)
-    DateTime? newKidDateOnly;
-    if (newKid.dateOfBirth != null) {
-      newKidDateOnly = DateTime(
-        newKid.dateOfBirth!.year,
-        newKid.dateOfBirth!.month,
-        newKid.dateOfBirth!.day,
-      );
-    }
-
-    // Check each existing kid
-    for (var existingKid in _kids) {
-      // Skip the kid being updated (if excludeKidId is provided)
-      if (excludeKidId != null && 
-          existingKid.id != null && 
-          existingKid.id.isNotEmpty && 
-          existingKid.id == excludeKidId) {
-        continue; // Skip this kid, check next one
-      }
-      
-      // Normalize existing kid's data
-      final existingKidName = existingKid.name.trim();
-      final existingKidGender = existingKid.gender.trim();
-      
-      // Skip if existing kid has empty name or gender
-      if (existingKidName.isEmpty || existingKidGender.isEmpty) {
+    for (final kid in _kids) {
+      if (excludeKidId != null &&
+          kid.id != null &&
+          kid.id!.isNotEmpty &&
+          kid.id == excludeKidId) {
         continue;
       }
-      
-      final existingKidNameLower = existingKidName.toLowerCase();
-      final existingKidGenderLower = existingKidGender.toLowerCase();
-      
-      // Compare name (case-insensitive)
-      if (existingKidNameLower != newKidNameLower) {
-        continue; // Name doesn't match, not a duplicate
-      }
-      
-      // Compare gender (case-insensitive)
-      if (existingKidGenderLower != newKidGenderLower) {
-        continue; // Gender doesn't match, not a duplicate
-      }
-      
-      // Compare date of birth (only year, month, and day - ignore time and timezone)
-      bool dobMatches = false;
-      
-      if (existingKid.dateOfBirth == null && newKidDateOnly == null) {
-        // Both dates are null - if name and gender match, it's a duplicate
-        dobMatches = true;
-      } else if (existingKid.dateOfBirth != null && newKidDateOnly != null) {
-        // Both have dates, normalize and compare
-        final existingKidDateOnly = DateTime(
-          existingKid.dateOfBirth!.year,
-          existingKid.dateOfBirth!.month,
-          existingKid.dateOfBirth!.day,
-        );
-        
-        // Compare normalized dates
-        dobMatches = existingKidDateOnly.year == newKidDateOnly.year &&
-                    existingKidDateOnly.month == newKidDateOnly.month &&
-                    existingKidDateOnly.day == newKidDateOnly.day;
-      }
-      // If one date is null and the other isn't, dobMatches remains false
-      
-      // All three fields (name, gender, dateOfBirth) must match for it to be a duplicate
-      if (dobMatches) {
-        return true; // Found a duplicate
+
+      final existingName = kid.name.trim().toLowerCase();
+      final existingGender = kid.gender.trim().toLowerCase();
+      final existingDob = kid.dateOfBirth != null
+          ? DateTime(
+              kid.dateOfBirth!.year,
+              kid.dateOfBirth!.month,
+              kid.dateOfBirth!.day,
+            )
+          : null;
+
+      if (existingName == newName &&
+          existingGender == newGender &&
+          ((existingDob == null && newDob == null) ||
+              (existingDob != null && newDob != null && existingDob.isAtSameMomentAs(newDob)))) {
+        return true;
       }
     }
-    
-    // No duplicates found
+
     return false;
   }
 
@@ -337,21 +292,10 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       // Prepare single child data for API
       final childPayload = kid.toApiJson();
-      var body = {
-        "children": [
-          {
-            "name": "a",
-            "age": 0,
-            "phoneNumber": "",
-            "gender": "male",
-            "birthDate": "2018-03-15T00:00:00Z"
-          }
-        ]
-      };
       final response = await ApiUtils.post(
         endpoint: UrlManager.addKids,
         body: {
-          'children': jsonEncode(body),
+          'children': [childPayload],
         },
       );
 
