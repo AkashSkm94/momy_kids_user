@@ -37,6 +37,9 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
   final _nameController = TextEditingController();
   String? _selectedGender; // Optional - can be null
   DateTime? _selectedDate;
+  String _originalName = '';
+  String? _originalGender;
+  DateTime? _originalDate;
 
   @override
   void initState() {
@@ -47,7 +50,14 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
           ? widget.existingKid!.gender 
           : null;
       _selectedDate = widget.existingKid!.dateOfBirth;
+      _originalName = _nameController.text.trim();
+      _originalGender = _selectedGender;
+      _originalDate = _selectedDate;
     }
+
+    _nameController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -128,7 +138,10 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
                     label: widget.existingKid == null
                         ? localizations.translate('add_child')
                         : localizations.translate('update_child'),
-                    onClick: _handleSaveKid,
+                    enabled: widget.existingKid == null || _hasChanges(),
+                    onClick: widget.existingKid == null || _hasChanges()
+                        ? _handleSaveKid
+                        : null,
                   ),
                 ),
               ],
@@ -137,6 +150,23 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
         ),
       ),
     );
+  }
+
+  bool _hasChanges() {
+    final currentName = _nameController.text.trim();
+    final currentGender = _selectedGender;
+    final currentDate = _selectedDate;
+
+    final normalizedCurrentDate = currentDate != null
+        ? DateTime(currentDate.year, currentDate.month, currentDate.day)
+        : null;
+    final normalizedOriginalDate = _originalDate != null
+        ? DateTime(_originalDate!.year, _originalDate!.month, _originalDate!.day)
+        : null;
+
+    return currentName != _originalName ||
+        currentGender != _originalGender ||
+        normalizedCurrentDate != normalizedOriginalDate;
   }
 
   Widget _buildTextField({

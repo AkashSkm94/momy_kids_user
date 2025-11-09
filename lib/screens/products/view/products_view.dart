@@ -85,10 +85,17 @@ class _ProductsViewState extends State<ProductsView> {
           bottomNavigationBar: CustomBottomNavigationBar(
             currentIndex: _currentBottomNavIndex,
             onTap: (index) {
+              if (_currentBottomNavIndex == index) return;
+              NavigationService.handleBottomNavigation(
+                currentIndex: _currentBottomNavIndex,
+                targetIndex: index,
+                onServicesTap: () {
+                  // TODO: Navigate to services screen when implemented
+                },
+              );
               setState(() {
                 _currentBottomNavIndex = index;
               });
-              _handleNavigation(index);
             },
           ),
         ),
@@ -103,55 +110,55 @@ class _ProductsViewState extends State<ProductsView> {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9FF),
       elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
-          onPressed: () async {
-            if (NavigationService.canGoBack()) {
-              NavigationService.goBack();
-            } else {
-              final title =
-                  localizations.translate('exit_application_title');
-              final message =
-                  localizations.translate('exit_application_message');
-              final cancelText = localizations.translate('cancel');
-              final exitText = localizations.translate('exit');
-
-              final shouldExit = await showDialog<bool>(
-                context: context,
-                builder: (dialogContext) {
-                  return AlertDialog(
-                    title: Text(title),
-                    content: Text(message),
-                    actions: [
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.of(dialogContext).pop(false),
-                        child: Text(cancelText),
-                      ),
-                      TextButton(
-                        onPressed: () =>
-                            Navigator.of(dialogContext).pop(true),
-                        child: Text(exitText),
-                      ),
-                    ],
-                  );
-                },
-              );
-
-              if (shouldExit == true) {
-                SystemNavigator.pop();
-              }
-            }
-          },
-        ),
-      ),
+      // leading: Container(
+      //   margin: const EdgeInsets.all(8),
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     shape: BoxShape.rectangle,
+      //     borderRadius: BorderRadius.all(Radius.circular(10)),
+      //   ),
+      //   child: IconButton(
+      //     icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
+      //     onPressed: () async {
+      //       if (NavigationService.canGoBack()) {
+      //         NavigationService.goBack();
+      //       } else {
+      //         final title =
+      //             localizations.translate('exit_application_title');
+      //         final message =
+      //             localizations.translate('exit_application_message');
+      //         final cancelText = localizations.translate('cancel');
+      //         final exitText = localizations.translate('exit');
+      //
+      //         final shouldExit = await showDialog<bool>(
+      //           context: context,
+      //           builder: (dialogContext) {
+      //             return AlertDialog(
+      //               title: Text(title),
+      //               content: Text(message),
+      //               actions: [
+      //                 TextButton(
+      //                   onPressed: () =>
+      //                       Navigator.of(dialogContext).pop(false),
+      //                   child: Text(cancelText),
+      //                 ),
+      //                 TextButton(
+      //                   onPressed: () =>
+      //                       Navigator.of(dialogContext).pop(true),
+      //                   child: Text(exitText),
+      //                 ),
+      //               ],
+      //             );
+      //           },
+      //         );
+      //
+      //         if (shouldExit == true) {
+      //           SystemNavigator.pop();
+      //         }
+      //       }
+      //     },
+      //   ),
+      // ),
       title: Text(
         'Hello $_userName!',
         style: const TextStyle(
@@ -725,24 +732,5 @@ class _ProductsViewState extends State<ProductsView> {
     );
   }
 
-  void _handleNavigation(int index) {
-    switch (index) {
-      case 0: // Home
-        NavigationService.navigateAndReplace(AppRoutes.home);
-        break;
-      case 1: // Services
-        // TODO: Navigate to services
-        break;
-      case 2: // Products
-        // Already on products page
-        break;
-      case 3: // Cart
-        NavigationService.navigateAndReplace(AppRoutes.cart);
-        break;
-      case 4: // Menu/Profile
-        NavigationService.navigateAndReplace(AppRoutes.profile);
-        break;
-    }
-  }
 }
 

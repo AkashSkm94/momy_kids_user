@@ -155,4 +155,32 @@ class NavigationService {
       ),
     );
   }
+
+  static void handleBottomNavigation({
+    required int currentIndex,
+    required int targetIndex,
+    VoidCallback? onServicesTap,
+  }) {
+    if (currentIndex == targetIndex) return;
+
+    switch (targetIndex) {
+      case 0:
+        navigateAndReplace(AppRoutes.home);
+        break;
+      case 1:
+        if (onServicesTap != null) {
+          onServicesTap();
+        }
+        break;
+      case 2:
+        navigateAndReplace(AppRoutes.products);
+        break;
+      case 3:
+        navigateAndReplace(AppRoutes.cart);
+        break;
+      case 4:
+        navigateAndReplace(AppRoutes.settings);
+        break;
+    }
+  }
 }

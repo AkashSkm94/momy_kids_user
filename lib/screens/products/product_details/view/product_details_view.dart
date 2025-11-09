@@ -53,10 +53,17 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
           bottomNavigationBar: CustomBottomNavigationBar(
             currentIndex: _currentBottomNavIndex,
             onTap: (index) {
+              if (_currentBottomNavIndex == index) return;
+              NavigationService.handleBottomNavigation(
+                currentIndex: _currentBottomNavIndex,
+                targetIndex: index,
+                onServicesTap: () {
+                  // TODO: Navigate to services screen when implemented
+                },
+              );
               setState(() {
                 _currentBottomNavIndex = index;
               });
-              _handleNavigation(index);
             },
           ),
         ),
@@ -577,24 +584,5 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
     );
   }
 
-  void _handleNavigation(int index) {
-    switch (index) {
-      case 0: // Home
-        NavigationService.navigateAndReplace(AppRoutes.home);
-        break;
-      case 1: // Services
-        // TODO: Navigate to services
-        break;
-      case 2: // Products
-        NavigationService.navigateAndReplace(AppRoutes.products);
-        break;
-      case 3: // Cart
-        // TODO: Navigate to cart
-        break;
-      case 4: // Menu/Profile
-        NavigationService.navigateAndReplace(AppRoutes.profile);
-        break;
-    }
-  }
 }
 

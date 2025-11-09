@@ -103,24 +103,24 @@ class _CartViewState extends State<CartView> {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
-          onPressed: () => NavigationService.goBack(),
-        ),
-      ),
+      // leading: Container(
+      //   margin: const EdgeInsets.all(8),
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     borderRadius: BorderRadius.circular(10),
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(0.05),
+      //         blurRadius: 8,
+      //         offset: const Offset(0, 2),
+      //       ),
+      //     ],
+      //   ),
+      //   child: IconButton(
+      //     icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
+      //     onPressed: () => NavigationService.goBack(),
+      //   ),
+      // ),
       title: Text(
         localizations.translate('cart_title'),
         style: const TextStyle(
@@ -431,27 +431,17 @@ class _CartViewState extends State<CartView> {
   void _handleBottomNavTap(int index) {
     if (_currentBottomNavIndex == index) return;
 
+    NavigationService.handleBottomNavigation(
+      currentIndex: _currentBottomNavIndex,
+      targetIndex: index,
+      onServicesTap: () {
+        // TODO: Navigate to services screen when available
+      },
+    );
+
     setState(() {
       _currentBottomNavIndex = index;
     });
-
-    switch (index) {
-      case 0:
-        NavigationService.navigateAndReplace(AppRoutes.home);
-        break;
-      case 1:
-        // TODO: Navigate to services screen when available
-        break;
-      case 2:
-        NavigationService.navigateAndReplace(AppRoutes.products);
-        break;
-      case 3:
-        // Already on cart
-        break;
-      case 4:
-        NavigationService.navigateAndReplace(AppRoutes.profile);
-        break;
-    }
   }
 }
 

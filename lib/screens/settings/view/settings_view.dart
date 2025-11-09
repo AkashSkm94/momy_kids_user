@@ -56,7 +56,19 @@ class _SettingsViewState extends State<SettingsView> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _currentBottomNavIndex,
         onTap: (index) {
-          _handleBottomNavigation(index);
+          if (_currentBottomNavIndex == index) {
+            setState(() {
+              _currentBottomNavIndex = index;
+            });
+            return;
+          }
+          NavigationService.handleBottomNavigation(
+            currentIndex: _currentBottomNavIndex,
+            targetIndex: index,
+            onServicesTap: () {
+              // TODO: Navigate to services screen when implemented
+            },
+          );
         },
       ),
     );
@@ -69,13 +81,13 @@ class _SettingsViewState extends State<SettingsView> {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9FF),
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          isRTL ? Icons.arrow_forward : Icons.arrow_back,
-          color: ColorPalette.textPrimary,
-        ),
-        onPressed: () => NavigationService.goBack(),
-      ),
+      // leading: IconButton(
+      //   icon: Icon(
+      //     isRTL ? Icons.arrow_forward : Icons.arrow_back,
+      //     color: ColorPalette.textPrimary,
+      //   ),
+      //   onPressed: () => NavigationService.goBack(),
+      // ),
       title: Text(
         localizations.translate('settings'),
         style: const TextStyle(
@@ -313,27 +325,4 @@ class _SettingsViewState extends State<SettingsView> {
       }
     }
   }
-    void _handleBottomNavigation(int index) {
-      switch (index) {
-        case 0: // Home
-          NavigationService.navigateAndReplace(AppRoutes.home);
-          break;
-        case 1: // Services
-        // TODO: Navigate to services
-          break;
-        case 2: // Products
-          NavigationService.navigateAndReplace(AppRoutes.products);
-          break;
-        case 3: // Cart
-        NavigationService.navigateAndReplace(AppRoutes.cart);
-          break;
-        case 4: // Menu/Profile
-        // Already on settings page (or navigate to profile)
-          setState(() {
-            _currentBottomNavIndex = index;
-          });
-          break;
-      }
-    }
-
 }
