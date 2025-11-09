@@ -602,133 +602,91 @@ class _ProfileViewState extends State<ProfileView> {
   Widget _buildGovernorateField(AppLocalizations localizations) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Label
-
-
-            // Dropdown container
-            Container(
-              height: 56,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-              child: Stack(
-                alignment: Alignment.bottomLeft,
-                children: [
-                  Positioned(
-                    top: 6,
-                    left: localizations.locale?.countryCode == 'en' ? 0 : 50,
-                    right: localizations.locale?.countryCode != 'en' ? 50 : 0,
-                    child: Text(
-                      localizations.translate('governorate'),
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: ColorPalette.textSecondary,
-                      ),
-                    ),
-                  ),
-                  DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: viewModel.governorates.contains(_governorateController.text)
-                          ? _governorateController.text
-                          : null,
-                      icon: const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: ColorPalette.textSecondary,
-                          size: 22,
-                        ),
-                      ),
-                      dropdownColor: Colors.white,
-                      style: const TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 16,
-                        color: ColorPalette.textPrimary,
-                      ),
-
-                      // Hint (when no value selected)
-                      hint: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: Row(
-                          children: [
-                            BaseImage(
-                              source: ImageSource.assetIcons,
-                              assetPath: ImageUtilsPath.icBuildings,
-                              iconColors: ColorPalette.primary,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              localizations.translate('select'),
-                              style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 16,
-                                color:
-                                ColorPalette.textSecondary.withOpacity(0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Items
-                      items: viewModel.governorates.map((name) {
-                        return DropdownMenuItem<String>(
-                          value: name,
-                          child: Padding(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                            child: Row(
-                              children: [
-                                BaseImage(
-                                  source: ImageSource.assetIcons,
-                                  assetPath: ImageUtilsPath.icBuildings,
-                                  iconColors: ColorPalette.primary,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    name,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontFamily: 'Montserrat',
-                                      fontSize: 16,
-                                      color: ColorPalette.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-
-                      // When user selects a value
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
-                          _governorateController.text = newValue;
-                          viewModel.setGovernorate(newValue);
-                        }
-                      },
-                    ),
-                  ),
-                ],
+            ],
+          ),
+          child: DropdownButtonFormField<String>(
+            value: viewModel.governorates.contains(_governorateController.text)
+                ? _governorateController.text
+                : null,
+            icon: const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: ColorPalette.textSecondary,
+                size: 22,
               ),
             ),
-          ],
+            dropdownColor: Colors.white,
+            style: const TextStyle(
+              fontFamily: 'Montserrat',
+              fontSize: 16,
+              color: ColorPalette.textPrimary,
+            ),
+            decoration: InputDecoration(
+              labelText: localizations.translate('governorate'),
+              hintText: localizations.translate('select'),
+              prefixIcon: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: 12,
+                  end: 8,
+                ),
+                child: BaseImage(
+                  source: ImageSource.assetIcons,
+                  assetPath: ImageUtilsPath.icBuildings,
+                  iconColors: ColorPalette.primary,
+                ),
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 36,
+                minHeight: 36,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              labelStyle: const TextStyle(
+                fontFamily: 'Montserrat',
+                color: ColorPalette.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+            items: viewModel.governorates.map((name) {
+              return DropdownMenuItem<String>(
+                value: name,
+                child: Text(
+                  name,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 16,
+                    color: ColorPalette.textPrimary,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                _governorateController.text = newValue;
+                viewModel.setGovernorate(newValue);
+              }
+            },
+          ),
         );
       },
     );
@@ -758,10 +716,10 @@ class _ProfileViewState extends State<ProfileView> {
                     // Store context-dependent references before async operations
                     final scaffoldMessenger = ScaffoldMessenger.of(context);
                     final currentLocalizations = localizations;
-                    
+
                     final kid = await KidDetailsBottomSheet.show(context);
                     if (!this.mounted) return;
-                    
+
                     if (kid != null) {
                       // Check for duplicate before adding
                       if (viewModel.isDuplicateKid(kid)) {
@@ -776,11 +734,11 @@ class _ProfileViewState extends State<ProfileView> {
                         );
                         return;
                       }
-                      
+
                       // Call API to add only this single kid (don't add to local list first)
                       final success = await viewModel.addSingleKidToProfile(context, kid);
                       if (!this.mounted) return;
-                      
+
                       if (success) {
                         if (mounted) {
                           _loadProfile();
@@ -806,7 +764,7 @@ class _ProfileViewState extends State<ProfileView> {
                             errorMessage = errorMessage.replaceAll('{$key}', value);
                           });
                         }
-                        
+
                         scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(errorMessage),
