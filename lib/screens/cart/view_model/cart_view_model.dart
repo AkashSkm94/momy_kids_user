@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import '../../../core/network/apiutils.dart';
+import '../../../core/network/url_manager.dart';
 import '../model/cart_item_model.dart';
 
 class CartViewModel extends ChangeNotifier {
-  CartViewModel() {
-    _loadInitialData();
-  }
+  CartViewModel();
 
   final List<CartItemModel> _items = [];
-  double _discount = 4.0;
-  double _deliveryCharges = 2.0;
+  double _discount = 0.0;
+  double _deliveryCharges = 0.0;
+  bool _isLoading = false;
+  String _errorMessage = '';
 
   List<CartItemModel> get items => List.unmodifiable(_items);
-
   double get discount => _discount;
   double get deliveryCharges => _deliveryCharges;
+  bool get isLoading => _isLoading;
+  String get errorMessage => _errorMessage;
 
-  int get totalItems => _items.fold<int>(0, (sum, item) => sum + item.quantity);
+  int get totalItems =>
+      _items.fold<int>(0, (sum, item) => sum + item.quantity);
 
   double get subtotal =>
       _items.fold<double>(0, (sum, item) => sum + item.total);
@@ -24,41 +28,45 @@ class CartViewModel extends ChangeNotifier {
 
   bool get isEmpty => _items.isEmpty;
 
-  void _loadInitialData() {
-    _items
-      ..clear()
-      ..addAll([
-        CartItemModel(
-          id: '1',
-          name: 'Rainbow Building Block',
-          vendor: 'Toy World',
-          price: 20.99,
-          imageUrl:
-              'https://images.unsplash.com/photo-1601758064083-3c28b80a39b1?auto=format&fit=crop&w=400&q=60',
-          quantity: 2,
-        ),
-        CartItemModel(
-          id: '2',
-          name: 'Magnetic Drawing Board',
-          vendor: 'Toy World',
-          price: 34.99,
-          imageUrl:
-              'https://images.unsplash.com/photo-1528747045269-390fe33c19d0?auto=format&fit=crop&w=400&q=60',
-          quantity: 1,
-        ),
-      ]);
+  Future<void> loadCart() async {
+    _setLoading(true);
+    _setError('');
+
+    try {
+      final response = await ApiUtils.get(endpoint: UrlManager.cartDetails);
+      if (response.isSuccess && response.hasData) {
+        final data = response.data['data'];
+        if (data == null) {
+          _setError('Cart data not found');
+        } else {
+          _parseCartData(data);
+        }
+      } else {
+        _setError(
+          response.message.isNotEmpty
+              ? response.message
+              : 'Failed to load cart',
+        );
+      }
+    } catch (e) {
+      _setError('Failed to load cart: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
   }
 
   void incrementQuantity(String id) {
-    final item = _items.firstWhere((element) => element.id == id);
-    item.quantity += 1;
+    final itemIndex = _items.indexWhere((element) => element.id == id);
+    if (itemIndex == -1) return;
+    _items[itemIndex].quantity += 1;
     notifyListeners();
   }
 
   void decrementQuantity(String id) {
-    final item = _items.firstWhere((element) => element.id == id);
-    if (item.quantity > 1) {
-      item.quantity -= 1;
+    final itemIndex = _items.indexWhere((element) => element.id == id);
+    if (itemIndex == -1) return;
+    if (_items[itemIndex].quantity > 1) {
+      _items[itemIndex].quantity -= 1;
       notifyListeners();
     }
   }
@@ -75,6 +83,65 @@ class CartViewModel extends ChangeNotifier {
 
   void updateDeliveryCharges(double value) {
     _deliveryCharges = value;
+    notifyListeners();
+  }
+
+  void _parseCartData(Map<String, dynamic> data) {
+    final items = (data['items'] as List<dynamic>? ?? []);
+    _items
+      ..clear()
+      ..addAll(items.map((item) => _mapCartItem(item)));
+
+    final subtotalFromApi =
+        (data['subtotal'] is num) ? (data['subtotal'] as num).toDouble() : null;
+    final totalFromApi =
+        (data['total'] is num) ? (data['total'] as num).toDouble() : null;
+
+    final computedSubtotal = subtotal;
+    _deliveryCharges = 0.0;
+
+    if (subtotalFromApi != null && totalFromApi != null) {
+      final difference = totalFromApi - computedSubtotal;
+      _deliveryCharges = difference >= 0 ? difference : 0.0;
+    }
+
+    notifyListeners();
+  }
+
+  CartItemModel _mapCartItem(Map<String, dynamic> item) {
+    final product = item['product'] as Map<String, dynamic>? ?? {};
+    final primaryImage = product['primary_image_url']?.toString();
+
+    return CartItemModel(
+      id: item['id']?.toString() ?? '',
+      productId: item['productId']?.toString() ?? '',
+      name: product['name']?.toString() ?? '',
+      description: product['description']?.toString() ?? '',
+      vendor: product['vendor_id']?.toString() ?? '',
+      unitPrice: _parseToDouble(item['unit_price']),
+      lineTotal: _parseToDouble(item['line_total']),
+      imageUrl: primaryImage != null && primaryImage.isNotEmpty
+          ? '${UrlManager.imageBaseUrl}$primaryImage'
+          : '',
+      quantity: item['quantity'] is int
+          ? item['quantity'] as int
+          : int.tryParse(item['quantity']?.toString() ?? '0') ?? 0,
+    );
+  }
+
+  double _parseToDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String message) {
+    _errorMessage = message;
     notifyListeners();
   }
 }

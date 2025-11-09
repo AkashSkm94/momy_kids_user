@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:momy_kids/core/constants/images_utils.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/components/app_background.dart';
@@ -28,7 +30,11 @@ class _CartViewState extends State<CartView> {
     final localizations = AppLocalizations.of(context);
 
     return ChangeNotifierProvider<CartViewModel>(
-      create: (_) => CartViewModel(),
+      create: (_) {
+        final viewModel = CartViewModel();
+        viewModel.loadCart();
+        return viewModel;
+      },
       child: AppBackground(
         child: Scaffold(
           backgroundColor: Colors.transparent,
@@ -40,6 +46,23 @@ class _CartViewState extends State<CartView> {
                 Expanded(
                   child: Consumer<CartViewModel>(
                     builder: (context, viewModel, child) {
+                      if (viewModel.isLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: ColorPalette.primary,
+                          ),
+                        );
+                      }
+
+                      if (viewModel.errorMessage.isNotEmpty) {
+                        return _buildErrorState(
+                          localizations,
+                          viewModel.errorMessage,
+                          onRetry: () =>
+                              context.read<CartViewModel>().loadCart(),
+                        );
+                      }
+
                       if (viewModel.isEmpty) {
                         return _buildEmptyState(localizations);
                       }
@@ -63,7 +86,7 @@ class _CartViewState extends State<CartView> {
                 const SizedBox(height: 16),
                 Consumer<CartViewModel>(
                   builder: (context, viewModel, child) {
-                    if (viewModel.isEmpty) {
+                    if (viewModel.isLoading || viewModel.isEmpty) {
                       return const SizedBox.shrink();
                     }
 
@@ -187,16 +210,16 @@ class _CartViewState extends State<CartView> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
           ClipRRect(
@@ -204,7 +227,7 @@ class _CartViewState extends State<CartView> {
             child: BaseImage(
               source: ImageSource.network,
               networkUrl: item.imageUrl,
-              width: 120,
+              width: 110,
               height: 100,
               fit: BoxFit.cover,
               backgroundColor: Colors.grey[200],
@@ -216,6 +239,7 @@ class _CartViewState extends State<CartView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
@@ -226,35 +250,46 @@ class _CartViewState extends State<CartView> {
                           fontSize: 16,
                           color: ColorPalette.textPrimary,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => viewModel.removeItem(item.id),
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: Colors.red
-                      ),
+                    GestureDetector(
+                      onTap: () => viewModel.removeItem(item.id),
+                      child: BaseImage(source: ImageSource.assetIcons,assetPath: ImageUtilsPath.icDelete,),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  item.vendor,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'Montserrat',
-                    fontSize: 12,
-                    color: ColorPalette.textSecondary,
+                if (item.description.isNotEmpty)
+                  Text(
+                    item.description,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      color: ColorPalette.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                else if (item.vendor.isNotEmpty)
+                  Text(
+                    item.vendor,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontFamily: 'Montserrat',
+                      fontSize: 12,
+                      color: ColorPalette.textSecondary,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Text(
-                      '\$${item.price.toStringAsFixed(2)}',
+                      _formatPrice(item.unitPrice),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 16,
                         color: ColorPalette.primary,
                       ),
                     ),
@@ -283,36 +318,63 @@ class _CartViewState extends State<CartView> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFECF2FF),
-        borderRadius: BorderRadius.circular(24),
+        //color: ColorPalette.primary,
+        borderRadius: BorderRadius.circular(20),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.remove, size: 18),
-            color: ColorPalette.primary,
-            onPressed: () => viewModel.decrementQuantity(item.id),
+          Container(
+            decoration: BoxDecoration(
+                color: ColorPalette.primary,
+                shape: BoxShape.circle),
+            child: _buildQuantityButton(
+              icon: Icons.remove,
+              onTap: () => viewModel.decrementQuantity(item.id),
+            ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+          Container(
+            width: 40,
+            alignment: Alignment.center,
             child: Text(
               item.quantity.toString().padLeft(2, '0'),
               style: const TextStyle(
                 fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: ColorPalette.textPrimary,
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                color: Colors.black,
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.add, size: 18),
-            color: ColorPalette.primary,
-            onPressed: () => viewModel.incrementQuantity(item.id),
+          Container(
+            decoration: BoxDecoration(
+                color: ColorPalette.primary,
+                shape: BoxShape.circle),
+            child: _buildQuantityButton(
+              icon: Icons.add,
+              onTap: () => viewModel.incrementQuantity(item.id),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(6.0),
+        child: Icon(
+          icon,
+          size: 16,
+          color: Colors.white,
+        ),
       ),
     );
   }
@@ -370,28 +432,28 @@ class _CartViewState extends State<CartView> {
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('subtotal'),
-            value: '\$${viewModel.subtotal.toStringAsFixed(2)}',
+            value: _formatPrice(viewModel.subtotal),
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue,
           ),
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('discount'),
-            value: '-\$${viewModel.discount.toStringAsFixed(2)}',
+            value: '-${_formatPrice(viewModel.discount)}',
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue.copyWith(color: Colors.green),
           ),
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('delivery_charges'),
-            value: '\$${viewModel.deliveryCharges.toStringAsFixed(2)}',
+            value: _formatPrice(viewModel.deliveryCharges),
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue,
           ),
           const Divider(height: 24, thickness: 1),
           _buildSummaryRow(
             label: localizations.translate('total'),
-            value: '\$${viewModel.total.toStringAsFixed(2)}',
+            value: _formatPrice(viewModel.total),
             labelStyle: textStyleLabel.copyWith(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -426,6 +488,59 @@ class _CartViewState extends State<CartView> {
         ),
       ],
     );
+  }
+
+  Widget _buildErrorState(
+    AppLocalizations localizations,
+    String message, {
+    required VoidCallback onRetry,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red[300],
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 16,
+                color: ColorPalette.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: onRetry,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorPalette.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              localizations.translate('retry') ?? 'Retry',
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatPrice(double value) {
+    final formatter =
+        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatter.format(value);
   }
 
   void _handleBottomNavTap(int index) {

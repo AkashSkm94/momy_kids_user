@@ -1,20 +1,26 @@
 class CartItemModel {
   CartItemModel({
     required this.id,
+    required this.productId,
     required this.name,
+    required this.description,
     required this.vendor,
-    required this.price,
+    required this.unitPrice,
+    required this.lineTotal,
     required this.imageUrl,
-    this.quantity = 1,
+    required this.quantity,
   });
 
   final String id;
+  final String productId;
   final String name;
+  final String description;
   final String vendor;
-  final double price;
+  final double unitPrice;
+  final double lineTotal;
   final String imageUrl;
   int quantity;
 
-  double get total => price * quantity;
+  double get total => unitPrice * quantity;
 }
 

@@ -72,6 +72,8 @@ class UrlManager {
   static const String productsGetAll = '/products/getAll';
   static const String productsCategoryAll = '/products/category/all';
   static const String productDetails = '/products/product/{productId}';
+  static const String cartItems = '/cart/items';
+  static const String cartDetails = '/cart';
 }
 
 

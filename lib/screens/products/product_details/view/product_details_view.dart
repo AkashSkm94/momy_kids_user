@@ -186,16 +186,21 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
         }
 
         return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Product Image Section
-              _buildProductImageSection(viewModel),
-              
-              // Product Details Card
-              _buildProductDetailsCard(viewModel, localizations),
-            ],
+
+          child: Container(
+            height: MediaQuery.of(context).size.height,
+            child: Stack(
+              children: [
+                _buildProductImageSection(viewModel),
+
+                Positioned(
+                  top: 250, // adjust as per image height
+                  left: 0,
+                  right: 0,
+                  child: _buildProductDetailsCard(viewModel, localizations),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -205,68 +210,87 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
   Widget _buildProductImageSection(ProductDetailsViewModel viewModel) {
     final imageUrls = viewModel.getAllImageUrls();
     final currentImageUrl = viewModel.getCurrentImageUrl();
-    
-    return Stack(
-      children: [
-        // Main Product Image
-        Container(
-          width: double.infinity,
-          height: 300,
-          color: Colors.grey[200],
-          child: currentImageUrl != null && currentImageUrl.isNotEmpty
-              ? BaseImage(
-                  networkUrl: '${UrlManager.imageBaseUrl}$currentImageUrl',
-                  source: ImageSource.network,
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.cover,
-                  errorWidget: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 60,
-                      color: Colors.grey,
+
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (imageUrls.length <= 1) return;
+        if (details.primaryVelocity == null) return;
+
+        if (details.primaryVelocity! < 0) {
+          viewModel.goToNextImage();
+        } else if (details.primaryVelocity! > 0) {
+          viewModel.goToPreviousImage();
+        }
+      },
+      child: Stack(
+        children: [
+          // Main Product Image
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: Container(
+              key: ValueKey<String>(currentImageUrl ?? 'placeholder'),
+              width: double.infinity,
+              height: 280,
+              color: Colors.grey[200],
+              child: currentImageUrl != null && currentImageUrl.isNotEmpty
+                  ? BaseImage(
+                      networkUrl: '${UrlManager.imageBaseUrl}$currentImageUrl',
+                      source: ImageSource.network,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorWidget: const Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      placeholder: const Center(
+                        child: CircularProgressIndicator(
+                          color: ColorPalette.primary,
+                        ),
+                      ),
+                    )
+                  : const Center(
+                      child: Icon(
+                        Icons.image,
+                        size: 60,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                  placeholder: const Center(
-                    child: CircularProgressIndicator(
-                      color: ColorPalette.primary,
+            ),
+          ),
+
+          // Image Indicators (dots)
+          if (imageUrls.length > 1)
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  imageUrls.length,
+                  (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: viewModel.selectedImageIndex == index
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
                     ),
-                  ),
-                )
-              : const Center(
-                  child: Icon(
-                    Icons.image,
-                    size: 60,
-                    color: Colors.grey,
-                  ),
-                ),
-        ),
-        
-        // Image Indicators (dots)
-        if (imageUrls.length > 1)
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                imageUrls.length,
-                (index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: viewModel.selectedImageIndex == index
-                        ? Colors.white
-                        : Colors.white.withOpacity(0.5),
                   ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -488,17 +512,34 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement add to cart
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        localizations.translate('added_to_cart') ?? 'Added to cart',
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
+                onPressed: viewModel.isAddingToCart || product.stock <= 0
+                    ? null
+                    : () async {
+                        final success =
+                            await viewModel.addToCart(context, quantity: 1);
+                        if (!mounted) return;
+                        final messenger = ScaffoldMessenger.of(context);
+                        if (success) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                localizations.translate('added_to_cart') ??
+                                    'Added to cart',
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          NavigationService.navigateAndReplace(
+                              AppRoutes.products);
+                        } else if (viewModel.errorMessage.isNotEmpty) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(viewModel.errorMessage),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ColorPalette.primary,
                   foregroundColor: Colors.white,
@@ -506,14 +547,24 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  localizations.translate('add_to_cart') ?? 'Add to Cart',
-                  style: const TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: viewModel.isAddingToCart
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        localizations.translate('add_to_cart') ?? 'Add to Cart',
+                        style: const TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],

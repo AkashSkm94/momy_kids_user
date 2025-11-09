@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../screens/onboarding/view/onboarding_view.dart';
 import '../../screens/splash_screen.dart';
+import '../../screens/dashboard/view/dashboard_view.dart';
 import '../../screens/mobile_number_verified/view/mobile_number_verified_view.dart';
 import '../../screens/mobile_number_otp_verified/view/mobile_number_otp_verified_view.dart';
 import '../../screens/email_otp_verified/view/email_otp_verified_view.dart';
@@ -74,15 +75,7 @@ class RouteGenerator {
         );
 
       case AppRoutes.home:
-      // TODO: Implement HomeScreen
-        return _createRoute(
-          const Scaffold(
-            body: Center(
-              child: Text('Home Screen - Coming Soon'),
-            ),
-          ),
-          settings.name!,
-        );
+        return _createRoute(const DashboardView(), settings.name!);
 
       case AppRoutes.products:
         return _createRoute(const ProductsView(), settings.name!);
