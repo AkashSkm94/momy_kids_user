@@ -66,6 +66,7 @@ class ApiUtils {
         headers: requestHeaders,
       ).timeout(const Duration(seconds: _timeoutDuration));
       print("url $url");
+      print("headers ${requestHeaders}");
       print(response.body);
       return _handleResponse(response);
     } catch (e) {

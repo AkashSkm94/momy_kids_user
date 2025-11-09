@@ -339,9 +339,7 @@ class ProfileViewModel extends ChangeNotifier {
       
       final response = await ApiUtils.post(
         endpoint: UrlManager.addKids,
-        body: {
-          'children': [childPayload], // Send only the single kid
-        },
+        body: childPayload,
       );
 
       if (response.isSuccess) {
@@ -429,9 +427,7 @@ class ProfileViewModel extends ChangeNotifier {
 
       final response = await ApiUtils.put(
         endpoint: UrlManager.updateKids,
-        body: {
-          'children': [childPayload],
-        },
+        body: childPayload,
       );
 
       if (response.isSuccess) {

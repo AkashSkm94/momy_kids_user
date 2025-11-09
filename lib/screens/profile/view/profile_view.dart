@@ -503,6 +503,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             labelText: localizations.translate('name'),
             onChanged: (value) => _viewModel.setName(value),
+            isRequired: true,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return localizations.translate('name_required');
@@ -537,6 +538,7 @@ class _ProfileViewState extends State<ProfileView> {
             keyboardType: TextInputType.emailAddress,
             onChanged: (value) => _viewModel.setEmail(value),
             readOnly: true,
+            isRequired: true,
           ),
         ],
       ),
@@ -633,7 +635,7 @@ class _ProfileViewState extends State<ProfileView> {
               color: ColorPalette.textPrimary,
             ),
             decoration: InputDecoration(
-              labelText: localizations.translate('governorate'),
+              labelText: '${localizations.translate('governorate')} *',
               hintText: localizations.translate('select'),
               prefixIcon: Padding(
                 padding: const EdgeInsetsDirectional.only(
@@ -1169,7 +1171,10 @@ class _ProfileViewState extends State<ProfileView> {
     Function(String)? onChanged,
     bool readOnly = false,
     String? Function(String?)? validator,
+    bool isRequired = false,
   }) {
+    final displayLabel = isRequired ? '$labelText *' : labelText;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1194,7 +1199,7 @@ class _ProfileViewState extends State<ProfileView> {
           color: ColorPalette.textPrimary,
         ),
         decoration: InputDecoration(
-          labelText: labelText,
+          labelText: displayLabel,
           prefixIcon: image,
           filled: true,
           fillColor: readOnly ? Colors.grey[300] : Colors.white,
@@ -1302,6 +1307,9 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Widget _buildPhoneField(AppLocalizations localizations) {
+    final isArabic =
+        Localizations.localeOf(context).languageCode.toLowerCase() == 'ar';
+
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
         return FormField<String>(
@@ -1310,6 +1318,16 @@ class _ProfileViewState extends State<ProfileView> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  '${localizations.translate('phone_number')} *',
+                  style: const TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: ColorPalette.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 6),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -1331,9 +1349,11 @@ class _ProfileViewState extends State<ProfileView> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFDEE9FF),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(12),
-                            bottomLeft: Radius.circular(12),
+                          borderRadius:  BorderRadius.only(
+                            topLeft: Radius.circular(isArabic ? 0 : 12),
+                            bottomLeft: Radius.circular(isArabic ? 0 : 12),
+                            topRight: Radius.circular(isArabic ? 12 : 0),
+                            bottomRight: Radius.circular(isArabic ? 12 : 0),
                           ),
                           border: Border.all(
                             color: ColorPalette.primary.withOpacity(0.3),
@@ -1389,9 +1409,11 @@ class _ProfileViewState extends State<ProfileView> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(12),
-                              bottomRight: Radius.circular(12),
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(isArabic ? 0 : 12),
+                              bottomRight: Radius.circular(isArabic ? 0 : 12),
+                              topLeft: Radius.circular(isArabic ? 12 : 0),
+                              bottomLeft: Radius.circular(isArabic ? 12 : 0),
                             ),
                             border: Border.all(
                               color: ColorPalette.primary.withOpacity(0.3),
