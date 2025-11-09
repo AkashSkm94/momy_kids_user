@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:momy_kids/core/components/app_background.dart';
 import 'package:provider/provider.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
@@ -110,7 +111,44 @@ class _ProductsViewState extends State<ProductsView> {
         ),
         child: IconButton(
           icon: const Icon(Icons.arrow_back, color: ColorPalette.textPrimary),
-          onPressed: () => NavigationService.goBack(),
+          onPressed: () async {
+            if (NavigationService.canGoBack()) {
+              NavigationService.goBack();
+            } else {
+              final title =
+                  localizations.translate('exit_application_title');
+              final message =
+                  localizations.translate('exit_application_message');
+              final cancelText = localizations.translate('cancel');
+              final exitText = localizations.translate('exit');
+
+              final shouldExit = await showDialog<bool>(
+                context: context,
+                builder: (dialogContext) {
+                  return AlertDialog(
+                    title: Text(title),
+                    content: Text(message),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(dialogContext).pop(false),
+                        child: Text(cancelText),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            Navigator.of(dialogContext).pop(true),
+                        child: Text(exitText),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (shouldExit == true) {
+                SystemNavigator.pop();
+              }
+            }
+          },
         ),
       ),
       title: Text(
@@ -658,7 +696,7 @@ class _ProductsViewState extends State<ProductsView> {
         // Already on products page
         break;
       case 3: // Cart
-        // TODO: Navigate to cart
+        NavigationService.navigateAndReplace(AppRoutes.cart);
         break;
       case 4: // Menu/Profile
         NavigationService.navigateAndReplace(AppRoutes.profile);

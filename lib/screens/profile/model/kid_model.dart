@@ -76,7 +76,7 @@ class Kid {
       'name': name,
       'age': age,
       'gender': gender,
-      'birthDate': dateOfBirth?.toUtc().toIso8601String(),
+      'birthDate': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
     };
   }
 
@@ -87,7 +87,7 @@ class Kid {
       'name': name,
       'age': age,
       'gender': gender,
-      'birthDate': dateOfBirth?.toUtc().toIso8601String(),
+      'birthDate': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
     };
   }
 
@@ -97,7 +97,7 @@ class Kid {
       'id': id,
       'name': name,
       'gender': gender,
-      'date_of_birth': dateOfBirth?.toIso8601String(),
+      'date_of_birth': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
       'age': age,
     };
   }

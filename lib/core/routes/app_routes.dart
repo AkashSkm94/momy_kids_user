@@ -13,6 +13,7 @@ class AppRoutes {
   static const String products = '/products';
   static const String productDetails = '/product-details';
   static const String profile = '/profile';
+  static const String cart = '/cart';
   static const String settings = '/settings';
   static const String about = '/about';
   static const String help = '/help';
@@ -33,6 +34,7 @@ class AppRoutes {
     'products': products,
     'productDetails': productDetails,
     'profile': profile,
+    'cart': cart,
     'settings': settings,
     'about': about,
     'help': help,

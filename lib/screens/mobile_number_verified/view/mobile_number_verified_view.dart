@@ -175,6 +175,9 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
   Widget _buildPhoneNumberField(AppLocalizations localizations) {
     return Consumer<MobileNumberVerifiedViewModel>(
       builder: (context, viewModel, child) {
+        final isArabic =
+            Localizations.localeOf(context).languageCode.toLowerCase() == 'ar';
+
         return Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -194,9 +197,11 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDEE9FF),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    bottomLeft: Radius.circular(12),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(isArabic ? 0 : 12),
+                    bottomLeft: Radius.circular(isArabic ? 0 : 12),
+                    topRight: Radius.circular(isArabic ? 12 : 0),
+                    bottomRight: Radius.circular(isArabic ? 12 : 0),
                   ),
                   border: Border.all(
                     color: ColorPalette.primary.withOpacity(0.3),
@@ -249,9 +254,11 @@ class _MobileNumberVerifiedViewState extends State<MobileNumberVerifiedView> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(12),
-                      bottomRight: Radius.circular(12),
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(isArabic ? 0 : 12),
+                      bottomRight: Radius.circular(isArabic ? 0 : 12),
+                      topLeft: Radius.circular(isArabic ? 12 : 0),
+                      bottomLeft: Radius.circular(isArabic ? 12 : 0),
                     ),
                     border: Border.all(
                       color: ColorPalette.primary.withOpacity(0.3),

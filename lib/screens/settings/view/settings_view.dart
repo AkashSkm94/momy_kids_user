@@ -325,7 +325,7 @@ class _SettingsViewState extends State<SettingsView> {
           NavigationService.navigateAndReplace(AppRoutes.products);
           break;
         case 3: // Cart
-        // TODO: Navigate to cart
+        NavigationService.navigateAndReplace(AppRoutes.cart);
           break;
         case 4: // Menu/Profile
         // Already on settings page (or navigate to profile)

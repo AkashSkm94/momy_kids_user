@@ -32,6 +32,9 @@
   "account": "Account",
   "language": "Language",
   "logout": "Logout",
+  "exit": "Exit",
+  "exit_application_title": "Exit Application",
+  "exit_application_message": "Do you want to exit the application?",
   "logout_confirmation_message": "Are you sure you want to logout?",
   "login": "Login",
   "register": "Register",
@@ -368,5 +371,15 @@
   "EMAIL_ALREADY_EXISTS": "Email ID is already registered. Please login with this email or register using a new email.",
   "INVALID_PASSWORD": "Invalid Password",
   "INVALID_OR_USED_OTP": "The OTP you entered is invalid or has already been used. Please request a new one.",
-  "INVALID_OTP": "Invalid OTP. Please try again."
+  "INVALID_OTP": "Invalid OTP. Please try again.",
+  "cart_title": "Cart",
+  "cart_empty_title": "Your cart is empty",
+  "cart_empty_subtitle": "Browse products and add them to your cart.",
+  "order_summary": "Order Summary",
+  "items_label": "Items",
+  "subtotal": "Subtotal",
+  "discount": "Discount",
+  "delivery_charges": "Delivery Charges",
+  "total": "Total",
+  "proceed_to_checkout": "Proceed to Checkout"
 }

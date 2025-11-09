@@ -186,7 +186,10 @@ class MobileNumberVerifiedViewModel extends ChangeNotifier {
         );
       }
     } catch (e) {
-      setError('Failed to send OTP: ${e.toString()}');
+      setError(
+        localizations.translate('otp_send_failed'),
+        errorKey: 'otp_send_failed',
+      );
     } finally {
       setLoading(false);
     }

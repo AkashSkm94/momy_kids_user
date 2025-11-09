@@ -1891,7 +1891,7 @@ class _ProfileViewState extends State<ProfileView> {
         NavigationService.navigateAndReplace(AppRoutes.products);
         break;
       case 3: // Cart
-        // TODO: Navigate to cart
+        NavigationService.navigateAndReplace(AppRoutes.cart);
         break;
       case 4: // Menu/Profile
         // Already on profile page
