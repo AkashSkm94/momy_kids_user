@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -336,10 +337,22 @@ class ProfileViewModel extends ChangeNotifier {
     try {
       // Prepare single child data for API
       final childPayload = kid.toApiJson();
-      
+      var body = {
+        "children": [
+          {
+            "name": "a",
+            "age": 0,
+            "phoneNumber": "",
+            "gender": "male",
+            "birthDate": "2018-03-15T00:00:00Z"
+          }
+        ]
+      };
       final response = await ApiUtils.post(
         endpoint: UrlManager.addKids,
-        body: childPayload,
+        body: {
+          'children': jsonEncode(body),
+        },
       );
 
       if (response.isSuccess) {
@@ -365,55 +378,6 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  // Add kids via API (kept for backward compatibility if needed)
-  Future<bool> addKidsToProfile(BuildContext context) async {
-    final localizations = AppLocalizations.of(context);
-    
-    if (_kids.isEmpty) {
-      setError(
-        localizations.translate('no_kids_to_add'),
-        errorKey: 'no_kids_to_add',
-      );
-      return false;
-    }
-
-    setLoading(true);
-    clearError();
-
-    try {
-      // Prepare children data for API
-      final children = _kids.map((kid) => kid.toApiJson()).toList();
-      
-      final response = await ApiUtils.post(
-        endpoint: UrlManager.addKids,
-        body: {
-          'children': children,
-        },
-      );
-
-      if (response.isSuccess) {
-        setSuccess(true);
-        return true;
-      } else {
-        // Translate the error message from API response
-        final errorMsg = response.message.isNotEmpty 
-            ? localizations.translate(response.message) 
-            : localizations.translate('kids_add_failed');
-        setError(errorMsg,errorKey: response.message);
-        return false;
-      }
-    } catch (e) {
-      setError(
-        localizations.translate('kids_add_failed'),
-        errorKey: 'kids_add_failed',
-      );
-      print('Error adding kids: $e');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
 
   // Update a single kid via API
   Future<bool> updateSingleKidInProfile(BuildContext context, Kid kid) async {
@@ -427,7 +391,9 @@ class ProfileViewModel extends ChangeNotifier {
 
       final response = await ApiUtils.put(
         endpoint: UrlManager.updateKids,
-        body: childPayload,
+        body: {
+          'children': [childPayload],
+        },
       );
 
       if (response.isSuccess) {

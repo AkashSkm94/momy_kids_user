@@ -7,6 +7,8 @@ class ProductModel {
   final String name;
   final String description;
   final double price;
+  final double rating;
+  final String soldBy;
   final int stock;
   final String categoryId;
   final bool isActive;
@@ -21,6 +23,8 @@ class ProductModel {
     required this.name,
     required this.description,
     required this.price,
+    required this.rating,
+    required this.soldBy,
     required this.stock,
     required this.categoryId,
     required this.isActive,
@@ -37,6 +41,8 @@ class ProductModel {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      rating: double.tryParse(json['rating']?.toString() ?? '0') ?? 0.0,
+      soldBy:  json['soldBy'] ?? "",
       stock: json['stock'] ?? 0,
       categoryId: json['category_id'] ?? '',
       isActive: json['is_active'] ?? false,

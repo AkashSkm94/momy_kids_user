@@ -368,14 +368,27 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
             const SizedBox(height: 16),
 
             // // Sold By (placeholder)
-            // Text(
-            //   '${localizations.translate('sold_by') ?? 'Sold by'} ${localizations.translate('toy_world') ?? 'Toy World'}',
-            //   style: TextStyle(
-            //     fontFamily: 'Montserrat',
-            //     fontSize: 14,
-            //     color: ColorPalette.textSecondary,
-            //   ),
-            // ),
+            Row(
+              children: [
+                Text(
+                  '${localizations.translate('sold_by') ?? 'Sold by'}',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    color: ColorPalette.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  '${product.soldBy}',
+                  style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 14,
+                    color: ColorPalette.primary,
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 24),
 
@@ -450,22 +463,22 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
             const SizedBox(height: 24),
 
             // Features Section
-            Text(
-              localizations.translate('features') ?? 'Features',
-              style: const TextStyle(
-                fontFamily: 'Montserrat',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: ColorPalette.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 12),
+            // Text(
+            //   localizations.translate('features') ?? 'Features',
+            //   style: const TextStyle(
+            //     fontFamily: 'Montserrat',
+            //     fontSize: 18,
+            //     fontWeight: FontWeight.w600,
+            //     color: ColorPalette.textPrimary,
+            //   ),
+            // ),
+            // const SizedBox(height: 12),
             // _buildFeatureItem(localizations.translate('high_quality_material') ?? 'High Quality Material'),
             // _buildFeatureItem(localizations.translate('safe_for_kids') ?? 'Safe for Kids'),
             // _buildFeatureItem(localizations.translate('fast_delivery') ?? 'Fast Delivery'),
             // _buildFeatureItem(localizations.translate('30_days_return_policy') ?? '30 Days Return Policy'),
 
-            const SizedBox(height: 32),
+            //const SizedBox(height: 32),
 
             // Stock Info
             Text(

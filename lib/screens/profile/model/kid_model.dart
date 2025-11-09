@@ -75,7 +75,8 @@ class Kid {
     return {
       'name': name,
       'age': age,
-      'gender': gender,
+      'phoneNumber':"",
+      'gender': gender.toLowerCase(),
       'birthDate': dateOfBirth == null ? "" : dateOfBirth?.toUtc().toIso8601String(),
     };
   }

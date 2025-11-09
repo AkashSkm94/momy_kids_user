@@ -300,7 +300,7 @@ class _KidDetailsContentState extends State<_KidDetailsContent> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: 200,
+          height: 230,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(

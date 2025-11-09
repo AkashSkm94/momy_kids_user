@@ -406,7 +406,7 @@ class _ProductsViewState extends State<ProductsView> {
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? ColorPalette.primary : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected 
                         ? ColorPalette.primary 
@@ -594,8 +594,8 @@ class _ProductsViewState extends State<ProductsView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: ColorPalette.primary,
-                      borderRadius: BorderRadius.circular(12),
+                      color: ColorPalette.productCategory,
+                      borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
                       product.categoryName,

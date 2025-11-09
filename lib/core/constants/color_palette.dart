@@ -17,6 +17,7 @@ class ColorPalette {
   static const Color colorGreen = Color(0xFF49A84C);
   static const Color settingIconColors = Color(0xFF000000);
   static const Color settingTextColor = Color(0xFF000000);
+  static const Color productCategory = Color(0xFF9747FF);
   static const Gradient primaryGradient = LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,

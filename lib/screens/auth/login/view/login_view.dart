@@ -66,17 +66,20 @@ class _LoginViewState extends State<LoginView> {
                       appLanguage: appLanguage,
                       onLanguageChange: () {
                         if (mounted) {
-                          // Reset form and hide error messages when language changes
                           FocusScope.of(context).unfocus();
-                          _emailController.clear();
-                          _passwordController.clear();
-                          _formKey.currentState?.reset();
-                          _viewModel.clearError();
-                          _viewModel.setEmail('');
-                          _viewModel.setPassword('');
-
-                          // Force rebuild to update keyboard language
-                          setState(() {});
+                          final email = _emailController.text;
+                          final password = _passwordController.text;
+                          _viewModel.onLanguageChanged();
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (!mounted) return;
+                            _emailController
+                              ..text = email
+                              ..selection = TextSelection.collapsed(
+                                offset: email.length,
+                              );
+                            _passwordController.text = "";
+                            setState(() {});
+                          });
                         }
                       },
                     ),
