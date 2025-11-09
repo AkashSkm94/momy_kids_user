@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/components/app_background.dart';
 import '../../../../core/components/bottom_navigation_bar.dart';
@@ -334,7 +335,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
             Row(
               children: [
                 Text(
-                  '\$${product.price.toStringAsFixed(2)}',
+                  _formatPrice(product.price),
                   style: const TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 28,
@@ -343,25 +344,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Rating Stars (placeholder - API doesn't provide rating)
-                Row(
-                  children: List.generate(5, (index) {
-                    return Icon(
-                      index < 4 ? Icons.star : Icons.star_border,
-                      size: 20,
-                      color: Colors.amber,
-                    );
-                  }),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '56890', // Placeholder - API doesn't provide review count
-                  style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    fontSize: 14,
-                    color: ColorPalette.textSecondary,
-                  ),
-                ),
+                _buildRatingBar(product.rating),
               ],
             ),
 
@@ -530,6 +513,42 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
         ),
       ),
     );
+  }
+
+  Widget _buildRatingBar(double rating) {
+    final clampedRating = rating.clamp(0, 5).toDouble();
+    final fullStars = clampedRating.floor();
+    final hasHalfStar = (clampedRating - fullStars) >= 0.5;
+    final emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return Row(
+      children: [
+        Row(
+          children: [
+            for (int i = 0; i < fullStars; i++)
+              const Icon(Icons.star, size: 20, color: Colors.amber),
+            if (hasHalfStar)
+              const Icon(Icons.star_half, size: 20, color: Colors.amber),
+            for (int i = 0; i < emptyStars; i++)
+              const Icon(Icons.star_border, size: 20, color: Colors.amber),
+          ],
+        ),
+        const SizedBox(width: 8),
+        Text(
+          clampedRating.toStringAsFixed(1),
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 14,
+            color: ColorPalette.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatPrice(double price) {
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatter.format(price);
   }
 
   Widget _buildFeatureItem(String text) {

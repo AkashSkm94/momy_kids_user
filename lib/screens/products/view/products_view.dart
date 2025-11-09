@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:momy_kids/core/components/app_background.dart';
 import 'package:provider/provider.dart';
 import '../../../core/components/bottom_navigation_bar.dart';
@@ -651,7 +652,7 @@ class _ProductsViewState extends State<ProductsView> {
                   Row(
                     children: [
                       Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                        _formatPrice(product.price),
                         style: const TextStyle(
                           fontFamily: 'Montserrat',
                           fontSize: 16,
@@ -662,18 +663,21 @@ class _ProductsViewState extends State<ProductsView> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  
+
+                  _buildRatingBar(product.rating),
+                  const SizedBox(height: 6),
+
                   // Stock info
-                  Text(
-                    'Stock: ${product.stock}',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 11,
-                      color: product.stock > 0 
-                          ? Colors.green 
-                          : Colors.red,
-                    ),
-                  ),
+                  // Text(
+                  //   'Stock: ${product.stock}',
+                  //   style: TextStyle(
+                  //     fontFamily: 'Montserrat',
+                  //     fontSize: 11,
+                  //     color: product.stock > 0
+                  //         ? Colors.green
+                  //         : Colors.red,
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -681,6 +685,43 @@ class _ProductsViewState extends State<ProductsView> {
         ],
       ),
     ),
+    );
+  }
+
+  String _formatPrice(double price) {
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    //final formatter =  NumberFormat('#,##0.00');
+    return formatter.format(price);
+  }
+
+  Widget _buildRatingBar(double rating) {
+    final clampedRating = rating.clamp(0, 5).toDouble();
+    final fullStars = clampedRating.floor();
+    final hasHalfStar = (clampedRating - fullStars) >= 0.5;
+    final emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return Row(
+      children: [
+        Row(
+          children: [
+            for (int i = 0; i < fullStars; i++)
+              const Icon(Icons.star, size: 16, color: Colors.amber),
+            if (hasHalfStar)
+              const Icon(Icons.star_half, size: 16, color: Colors.amber),
+            for (int i = 0; i < emptyStars; i++)
+              const Icon(Icons.star_border, size: 16, color: Colors.amber),
+          ],
+        ),
+        const SizedBox(width: 6),
+        Text(
+          clampedRating.toStringAsFixed(1),
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 12,
+            color: ColorPalette.textSecondary,
+          ),
+        ),
+      ],
     );
   }
 
