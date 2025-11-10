@@ -478,14 +478,14 @@ class _ProductsViewState extends State<ProductsView> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text(
+                      Expanded(child: Text(
                         localizations.translate('get_20_off_toys') ?? 'Get 20% off on all toys',
                         style: const TextStyle(
                           fontFamily: 'Montserrat',
                           fontSize: 14,
                           color: Colors.white,
                         ),
-                      ),
+                      ),),
                       const SizedBox(width: 8),
                       const Icon(
                         Icons.shopping_bag,

@@ -529,8 +529,8 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
                               backgroundColor: Colors.green,
                             ),
                           );
-                          NavigationService.navigateAndReplace(
-                              AppRoutes.products);
+                          NavigationService.navigateTo(
+                              AppRoutes.cart);
                         } else if (viewModel.errorMessage.isNotEmpty) {
                           messenger.showSnackBar(
                             SnackBar(
