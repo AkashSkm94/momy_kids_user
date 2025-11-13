@@ -254,17 +254,28 @@ class RouteGenerator {
           child: child,
         );
 
+        //case AppRoutes.products:
+        // return SlideTransition(
+        //   position: Tween<Offset>(
+        //     begin: const Offset(1.0, 0.0),
+        //     end: Offset.zero,
+        //   ).animate(CurvedAnimation(
+        //     parent: animation,
+        //     curve: Curves.easeInOut,
+        //   )),
+        //   child: child,
+        // );
       case AppRoutes.products:
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeInOut,
-          )),
-          child: child,
-        );
+        return Container(child: child,);
+
+      case AppRoutes.cart:
+        return Container(child: child,);
+
+      case AppRoutes.home:
+        return Container(child: child,);
+
+      case AppRoutes.settings:
+        return Container(child: child,);
 
       case AppRoutes.productDetails:
         return SlideTransition(

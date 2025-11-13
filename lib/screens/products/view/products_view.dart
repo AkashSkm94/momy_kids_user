@@ -186,7 +186,7 @@ class _ProductsViewState extends State<ProductsView> {
         Common.profileIcon(
           context: context,
           radius: 18,
-          padding: const EdgeInsets.only(right: 16.0),
+          padding: const EdgeInsets.only(right: 16.0,left: 16.0),
         ),
       ],
     );
@@ -659,7 +659,7 @@ class _ProductsViewState extends State<ProductsView> {
                   Row(
                     children: [
                       Text(
-                        _formatPrice(product.price),
+                        '${Common.formatPrice(product.price)}',
                         style: const TextStyle(
                           fontFamily: 'Montserrat',
                           fontSize: 16,
@@ -695,11 +695,7 @@ class _ProductsViewState extends State<ProductsView> {
     );
   }
 
-  String _formatPrice(double price) {
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    //final formatter =  NumberFormat('#,##0.00');
-    return formatter.format(price);
-  }
+
 
   Widget _buildRatingBar(double rating) {
     final clampedRating = rating.clamp(0, 5).toDouble();

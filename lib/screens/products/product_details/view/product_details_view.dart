@@ -117,7 +117,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
         Common.profileIcon(
           context: context,
           radius: 18,
-          padding: const EdgeInsets.only(right: 16.0),
+          padding: const EdgeInsets.only(right: 16.0,left: 16.0),
         ),
       ],
     );
@@ -268,7 +268,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
           // Image Indicators (dots)
           if (imageUrls.length > 1)
             Positioned(
-              bottom: 16,
+              bottom: 36,
               left: 0,
               right: 0,
               child: Row(
@@ -366,7 +366,7 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
             Row(
               children: [
                 Text(
-                  _formatPrice(product.price),
+                  '${Common.formatPrice(product.price)}',
                   style: const TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 28,

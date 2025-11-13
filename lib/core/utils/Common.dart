@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../components/image_widgets.dart';
 import '../constants/color_palette.dart';
@@ -151,6 +152,13 @@ class Common{
      // Handle image URL - remove leading slash if present to avoid double slashes
      final cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
      return UrlManager.imageBaseUrl + cleanUrl;
+   }
+
+
+   static String formatPrice(double price) {
+     // final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+     final formatter =  NumberFormat('#,##0.00');
+     return 'KD ${formatter.format(price)}';
    }
 
 }

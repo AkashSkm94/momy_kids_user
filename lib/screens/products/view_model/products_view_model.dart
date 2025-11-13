@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/network/apiutils.dart';
 import '../../../core/network/url_manager.dart';
 import '../model/product_model.dart';
@@ -192,6 +193,7 @@ class ProductsViewModel extends ChangeNotifier {
     _hasMore = true;
     await loadProducts(reset: true);
   }
+
 
   // Extract unique categories from products
 

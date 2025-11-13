@@ -301,7 +301,7 @@ class _CartViewState extends State<CartView> {
                 Row(
                   children: [
                     Text(
-                      _formatPrice(item.unitPrice),
+                      Common.formatPrice(item.unitPrice),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w600,
@@ -461,28 +461,28 @@ class _CartViewState extends State<CartView> {
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('subtotal'),
-            value: _formatPrice(viewModel.subtotal),
+            value: Common.formatPrice(viewModel.subtotal),
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue,
           ),
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('discount'),
-            value: '-${_formatPrice(viewModel.discount)}',
+            value: '-${Common.formatPrice(viewModel.discount)}',
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue.copyWith(color: Colors.green),
           ),
           const SizedBox(height: 8),
           _buildSummaryRow(
             label: localizations.translate('delivery_charges'),
-            value: _formatPrice(viewModel.deliveryCharges),
+            value: Common.formatPrice(viewModel.deliveryCharges),
             labelStyle: textStyleLabel,
             valueStyle: textStyleValue,
           ),
           const Divider(height: 24, thickness: 1),
           _buildSummaryRow(
             label: localizations.translate('total'),
-            value: _formatPrice(viewModel.total),
+            value: Common.formatPrice(viewModel.total),
             labelStyle: textStyleLabel.copyWith(
               fontSize: 15,
               fontWeight: FontWeight.w600,
