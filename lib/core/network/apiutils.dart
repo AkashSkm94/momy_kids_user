@@ -58,6 +58,10 @@ class ApiUtils {
         ...?headers,
       };
 
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      requestHeaders['x-lang'] = languageCode;
+
       // Add authorization header if token exists
       final token = await _getAuthToken();
       if (token != null) {
@@ -104,6 +108,10 @@ class ApiUtils {
         'Accept': 'application/json',
         ...?headers,
       };
+
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      requestHeaders['x-lang'] = languageCode;
 
       // Add authorization header if token exists
       final token = await _getAuthToken();
@@ -155,6 +163,10 @@ class ApiUtils {
         ...?headers,
       };
 
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      requestHeaders['x-lang'] = languageCode;
+
       // Add authorization header if token exists
       final token = await _getAuthToken();
       if (token != null) {
@@ -202,6 +214,10 @@ class ApiUtils {
         ...?headers,
       };
 
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      requestHeaders['x-lang'] = languageCode;
+
       final token = await _getAuthToken();
       if (token != null) {
         requestHeaders['Authorization'] = 'Bearer $token';
@@ -248,6 +264,10 @@ class ApiUtils {
         'Accept': 'application/json',
         ...?headers,
       };
+
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      requestHeaders['x-lang'] = languageCode;
 
       // Add authorization header if token exists
       final token = await _getAuthToken();
@@ -301,6 +321,10 @@ class ApiUtils {
         'Accept': 'application/json',
         ...?headers,
       });
+
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      request.headers['x-lang'] = languageCode;
 
       // Add authorization header if token exists
       final token = await _getAuthToken();
@@ -362,6 +386,10 @@ class ApiUtils {
         'Accept': 'application/json',
         ...?headers,
       });
+
+      // Add language header
+      final languageCode = await _getLanguageCode();
+      request.headers['x-lang'] = languageCode;
 
       // Add authorization header if token exists
       final token = await _getAuthToken();
@@ -495,6 +523,19 @@ class ApiUtils {
       return storage.getAuthToken();
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Get language code for API header
+  static Future<String> _getLanguageCode() async {
+    try {
+      final storage = await LocalStorageManager.getInstance();
+      final languageCode = storage.getString(LocalStorageManager.keyLanguageCode);
+      // Return 'ar' if Arabic, otherwise default to 'en'
+      return languageCode == 'ar' ? 'ar' : 'en';
+    } catch (e) {
+      // Default to English if there's any error
+      return 'en';
     }
   }
 
